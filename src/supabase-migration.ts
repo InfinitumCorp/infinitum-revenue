@@ -1,7 +1,7 @@
 import { DB_SCHEMA } from "./db.js";
 import { SCHEMA_SQL } from "./schema.js";
 
-export const SUPABASE_MIGRATION_FILE = "supabase/migrations/20261107000000_infinitum_revenue.sql";
+export const SUPABASE_MIGRATION_FILE = "supabase/migrations/20261107202600_infinitum_revenue.sql";
 
 /**
  * The Supabase migration for this product: SCHEMA_SQL inside its own schema in

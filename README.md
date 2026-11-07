@@ -33,7 +33,7 @@ npm run deploy           # production deploy, which needs sign-off first
 
 Data lives in the shared **Infinitum Corp** Supabase project (ref `ivqiskeziohbbtkcvlun`) in the `infinitum_revenue` schema. Every table has RLS on with no policies, and `anon` and `authenticated` have no grants, so the Data API keys can't reach billing data. Only the Worker can, over `DATABASE_URL`. No Supabase key goes to any client.
 
-- `supabase/migrations/20261107000000_infinitum_revenue.sql` is generated from `src/schema.ts` with `npm run db:gen`, and a test fails if the two drift. To change the schema, edit `src/schema.ts`, run `db:gen`, then add the change as a **new** migration file. Don't edit an applied one.
+- `supabase/migrations/20261107202600_infinitum_revenue.sql` is generated from `src/schema.ts` with `npm run db:gen`, and a test fails if the two drift. To change the schema, edit `src/schema.ts`, run `db:gen`, then add the change as a **new** migration file. Don't edit an applied one.
 - Apply it with `npm run db:push` (`supabase db push`, after `supabase link --project-ref ivqiskeziohbbtkcvlun`). Because the project is shared, the CLI will report migration versions that other products pushed. If it does, apply this file in the SQL editor or with `psql "$DATABASE_URL" -f <file>` instead.
 - The Worker never migrates at request time. The Node server (`npm start` with `DATABASE_URL`) creates the schema and applies `src/schema.ts` on boot, as before.
 
