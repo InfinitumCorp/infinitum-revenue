@@ -31,6 +31,7 @@ export async function bootFromEnv(opts: { worker?: boolean } = {}) {
       adminApiKey: adminApiKey.length >= 32 ? adminApiKey : "",
       licenceSigningKeyPem: process.env.LICENCE_SIGNING_KEY?.replace(/\\n/g, "\n"),
       tokenPayoutsEnabled: process.env.TOKEN_PAYOUTS_ENABLED === "true",
+      recaptchaSecretKey: process.env.RECAPTCHA_SECRET_KEY?.trim() || undefined,
     },
   };
   return { ctx, app: createApp(ctx) };

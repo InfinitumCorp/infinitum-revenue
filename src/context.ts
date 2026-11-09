@@ -9,6 +9,11 @@ export interface Config {
   licenceSigningKeyPem?: string; // Ed25519 PKCS8 PEM; generated per process when absent (dev only)
   /** Token (crypto) payouts stay off until counsel signs off on the token programme. */
   tokenPayoutsEnabled: boolean;
+  /**
+   * Standard reCAPTCHA secret (v2/v3 siteverify, not Enterprise). When unset,
+   * public signup is not challenged.
+   */
+  recaptchaSecretKey?: string;
 }
 
 export interface Ctx { db: Db; pay: PaymentProvider; config: Config }
