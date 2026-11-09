@@ -2,6 +2,8 @@ import { DB_SCHEMA, migrate, pgliteDb, postgresDb } from "./db.js";
 import { FakePayments, StripePayments } from "./payments.js";
 import type { Ctx } from "./context.js";
 import { createApp } from "./app.js";
+import { emptyGeoIndex, loadGeoDatasets, type GeoIndex } from "./geo/dat.js";
+import { geoDataDir, readPersistedGeoRouting, resolveGeoEnabled } from "./geo/settings.js";
 
 /**
  * Builds the app from environment variables. Without DATABASE_URL / STRIPE_SECRET_KEY it runs fully local.
@@ -22,8 +24,21 @@ export async function bootFromEnv(opts: { worker?: boolean } = {}) {
   if (process.env.NODE_ENV === "production" && pay instanceof FakePayments) throw new Error("STRIPE_SECRET_KEY is required in production");
   const adminApiKey = process.env.ADMIN_API_KEY ?? "";
   if (adminApiKey.length < 32) console.warn("ADMIN_API_KEY missing or shorter than 32 chars: admin routes are effectively disabled.");
+  const envGeo = process.env.INFINITUM_GEO_ENABLED?.trim() ?? "";
+  const persistedGeo = envGeo === "" ? await readPersistedGeoRouting() : false;
+  const geoEnabled = resolveGeoEnabled(process.env, persistedGeo);
+  let geo: GeoIndex | undefined;
+  if (geoEnabled) {
+    try {
+      geo = await loadGeoDatasets(geoDataDir());
+      if (geo.skippedRegex > 0) console.warn(`geo: skipped ${geo.skippedRegex} site patterns that are not valid JavaScript regular expressions`);
+    } catch (err) {
+      console.error(`geo datasets unavailable: ${err instanceof Error ? err.message : err}`);
+      geo = emptyGeoIndex();
+    }
+  }
   const ctx: Ctx = {
-    db, pay,
+    db, pay, geo,
     config: {
       publicUrl: process.env.PUBLIC_URL ?? "http://localhost:3000",
       returnHosts: (process.env.RETURN_HOSTS ?? "rchtch.app,scalvs.app,cumuluscloud.app,mttrn.app,infinitumcorporation.ai,infinitumcorp.workers.dev")
@@ -31,6 +46,7 @@ export async function bootFromEnv(opts: { worker?: boolean } = {}) {
       adminApiKey: adminApiKey.length >= 32 ? adminApiKey : "",
       licenceSigningKeyPem: process.env.LICENCE_SIGNING_KEY?.replace(/\\n/g, "\n"),
       tokenPayoutsEnabled: process.env.TOKEN_PAYOUTS_ENABLED === "true",
+      geoEnabled,
     },
   };
   return { ctx, app: createApp(ctx) };

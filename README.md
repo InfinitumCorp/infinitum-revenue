@@ -52,6 +52,15 @@ Set secrets with `npx wrangler secret put <NAME>` (or in the Cloudflare dashboar
 | `RETURN_HOSTS` | var | Comma-separated product domains apps may pass as `returnUrl` on checkout, credits and portal calls; these origins also get CORS on the customer API. |
 | `STRIPE_AUTOMATIC_TAX` | var | `true` to enable Stripe Tax (default `false` in `wrangler.jsonc`). |
 | `TOKEN_PAYOUTS_ENABLED` | var | Leave `false` until the token programme has had legal review. |
+| `INFINITUM_GEO_ENABLED` | var | `true` forces geo routing on. `false` forces it off. When unset, the persisted toggle is used. Default off. |
+
+### Geo routing (off by default)
+
+Country and site-category annotation for cyber review uses the v2fly `geoip.dat` and `geosite.dat` datasets. Requests stay the same while it is off.
+
+- `npx tsx src/server.ts --geo-routing on` (or `off` / `status`) persists the toggle in `.data/geo-routing.json`. The shipped default in `config/settings.json` is off.
+- `npm run geo:fetch` downloads the pinned datasets into `data/geo/` and checks each file against the official `.sha256sum` asset and `geo-lock.json`. A mismatch stops the script. The binaries are not committed.
+- Attribution is in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Loyalsoldier and sing-box builds are not used.
 
 ## Go live
 
