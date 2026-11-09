@@ -1,3 +1,4 @@
+import type { AwsHooks } from "./aws.js";
 import type { Db } from "./db.js";
 import type { PaymentProvider } from "./payments.js";
 
@@ -16,7 +17,15 @@ export interface Config {
   recaptchaSecretKey?: string;
 }
 
-export interface Ctx { db: Db; pay: PaymentProvider; config: Config }
+export interface Ctx {
+  db: Db;
+  pay: PaymentProvider;
+  config: Config;
+  /** Set only when Always Free AWS adapters are configured. */
+  aws?: AwsHooks;
+  /** Best-effort AWS calls for this request. The Worker drains them with waitUntil. */
+  pending?: Promise<void>[];
+}
 
 export class AppError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }

@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { timingSafeEqual } from "node:crypto";
 import { z, ZodError } from "zod";
 import { AppError, fail, type Ctx } from "./context.js";
+import { paymentNotice } from "./aws.js";
 import { clientIp, recaptchaToken, verifyRecaptcha } from "./recaptcha.js";
 import { CREDIT_PACKS, HARDWARE, MARKETPLACES, METERS, PRODUCTS } from "./catalog.js";
 import * as billing from "./services/billing.js";
@@ -97,7 +98,14 @@ main{max-width:28rem;padding:2rem;border:1px solid #000}h1{font-size:1.25rem;mar
     let event;
     try { event = await ctx.pay.parseWebhook(await c.req.text(), c.req.header("stripe-signature")); }
     catch { return c.json({ error: { code: "bad_signature", message: "Webhook signature verification failed" } }, 400); }
-    return c.json({ received: true, ...(await handlePaymentEvent(ctx, event)) });
+    try {
+      const result = await handlePaymentEvent(ctx, event);
+      ctx.aws?.paymentProcessed(paymentNotice(event, result));
+      return c.json({ received: true, ...result });
+    } catch (err) {
+      ctx.aws?.webhookFailed();
+      throw err;
+    }
   });
 
   app.get("/v1/licences/public-key", (c) => c.text(contracts.licencePublicKeyPem(ctx)));

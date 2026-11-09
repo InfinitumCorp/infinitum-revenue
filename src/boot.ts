@@ -1,3 +1,4 @@
+import { attachAws } from "./aws.js";
 import { DB_SCHEMA, migrate, pgliteDb, postgresDb } from "./db.js";
 import { FakePayments, StripePayments } from "./payments.js";
 import type { Ctx } from "./context.js";
@@ -34,5 +35,6 @@ export async function bootFromEnv(opts: { worker?: boolean } = {}) {
       recaptchaSecretKey: process.env.RECAPTCHA_SECRET_KEY?.trim() || undefined,
     },
   };
+  attachAws(ctx);
   return { ctx, app: createApp(ctx) };
 }
