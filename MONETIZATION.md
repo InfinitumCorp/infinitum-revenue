@@ -3,7 +3,7 @@
 Every revenue stream across the portfolio on infinitumcorporation.ai (infinitum-corporation.vercel.app now redirects there), and where the backend implements it.
 Prices are **proposed launch prices** (in `src/catalog.ts`), set to be reviewed, not final decisions.
 
-*Last updated 9 Nov 2026: added the $FIRM Suite and $FIRM Wallet, @conjure live predictions and the Genesis Drop. Also flagged the conflict between the site's data-sharing split and the backend's (§4). Later the same day: added the CryptoPublicOffering™ launch (§5), the REVshare terms (§6) and distribution, hosting and the GCP free-tier policy (§7). Then: DNS for both corporate domains moved to Cloudflare, with the registrar transfer due from 7 Jan 2027 (§7, next move #13). Later still: **Infinitum tokens are Solana-only** (§5 rewritten), and the Genesis Drop status and deploy blockers are updated (§2, §7, next moves #14–#15).*
+*Last updated 9 Nov 2026: added the $FIRM Suite and $FIRM Wallet, @conjure live predictions and the Genesis Drop. Also flagged the conflict between the site's data-sharing split and the backend's (§4). Later the same day: added the CryptoPublicOffering™ launch (§5), the REVshare terms (§6) and distribution, hosting and the GCP free-tier policy (§7). Then: DNS for both corporate domains moved to Cloudflare, with the registrar transfer due from 7 Jan 2027 (§7, next move #13). Later still: **Infinitum tokens are Solana-only** (§5 rewritten), and the Genesis Drop status and deploy blockers are updated (§2, §7, next moves #14–#15). Then: ÆTHER MIL™ and @conjure's cost role (§2), and the Cumulus unit-economics flags (§7, next moves #16–#17).*
 
 ## 1. The 13 revenue mechanisms
 
@@ -20,7 +20,7 @@ Prices are **proposed launch prices** (in `src/catalog.ts`), set to be reviewed,
 | 9 | **Buyer-funded Missions** (bounty + 15–20% fee) | [HRVST], Cumulus | `missions`, submissions, review |
 | 10 | **Enterprise / sales-assisted tiers** (KYB / purpose review before purchase) | ei·det·ic, SCALVS Private Tenant, Spectre Enterprise, Firmament Permissioned, [HRVST] Buyer, Rack | `admin/orgs/:id/approve` |
 | 11 | **Contracted services billed by milestone** | IT, security, engineering, PM consulting; narrative intelligence; Cognitive / Reflexive Capital / Irregular Warfare advisory; managed services; implementation | `admin/engagements`, milestone invoices |
-| 12 | **Defense contracts** (never self-serve, outside the token economy, defense-verified orgs only) | ODIN° and the 18 MIL editions, DAEMON WARDEN/ZENITH, Cumulus Sovereign | Contract channel + `verify-defense` gate |
+| 12 | **Defense contracts** (never self-serve, outside the token economy, defense-verified orgs only) | ODIN° and the 18 MIL editions, ÆTHER MIL™ (ODIN°'s comms layer), DAEMON WARDEN/ZENITH, Cumulus Sovereign | Contract channel + `verify-defense` gate |
 | 13 | **Partner referrals** (20% of referred invoices for 12 months) | VEIL as the free funnel into every paid product; resellers; integrators | `referral-codes`, auto commission |
 
 ## 2. Product by product
@@ -44,6 +44,8 @@ Prices are **proposed launch prices** (in `src/catalog.ts`), set to be reviewed,
 | **$FIRM Wallet™** | Built (infinitum-nexus #67, merged). Self-custody on ETH/Base/Arbitrum/Solana, Uniswap and Jupiter swaps, tokenized stocks, Hyperliquid perps and spot, Derive options data, read-only Polymarket and Kalshi, Conjure signals, and $FIRM Mini for Telegram. It defaults to testnet and is not deployed. **Infinitum takes no fee in it today**: it earns indirectly through the Suite and METATRON. Possible later revenue: Hyperliquid builder fees, a swap fee and venue referral programmes. All of these sit behind the counsel review in §3 |
 | **$FIRM / product tokens** | See section 3. Not switched on in the backend. The Genesis Drop (1 Jan 2027, snapshot 31 Dec 23:00 UTC) collects Solana wallet registrations only (10 tokens, three early-viewer tiers: Genesis #1–1,000 ×3, Vanguard #1,001–10,000 ×2, Wave ×1; 5 new wallets per IP per day). API in [InfinitumCorp/infinitum-revenue#6](https://github.com/InfinitumCorp/infinitum-revenue/pull/6), open, not merged; its Supabase table is already applied. The /drop page on infinitumcorporation.ai is built but **not deployed**, and pool sizes are still "announced with final terms" |
 | **ODIN°** | Multi-year defense contracts, milestone-invoiced, confidential descriptions on invoices |
+| **ÆTHER MIL™** | ODIN°'s secure comms and mesh layer (Talk, Mesh, Vault; post-quantum handshake, device certificates). Defense-only, with no commercial edition and outside the token economy. It is sold inside ODIN° contracts or as a per-unit/per-device licence under mechanism #12, never self-serve. The web build at infinitumaether.app sits behind Vercel team SSO. There is no catalog entry yet, because it is priced by contract |
+| **@conjure** | Not sold on its own. It is the prediction engine inside the products, metered as METATRON prediction runs, SCALVS tasks and +SPCTR credits. Each product key has a daily limit. Without an Anthropic key it falls back to a free open-source model (Ollama). That fallback keeps free-plan forecasts close to zero cost, so only paid plans need to run on Claude |
 | **Academy** | $29/mo membership; certifications for partners and integrators (feeds the referral channel) |
 
 ## 3. What I deliberately did not switch on
@@ -102,7 +104,17 @@ Earnings land in a USD ledger. They are held 7–14 days to cover refunds and di
   - Small Cloud Storage
   - The Gemini API free tier, for prototypes only
 
-  Keep customer data off the free Gemini tier, because Google may use free-tier inputs. Don't move the billing API off Workers/Supabase for the sake of GCP. GPU, Vertex AI after the trial and Marketplace billing are paid, so the Cumulus GPU and inference meters have no GCP capacity behind them. Back them with another provider or keep them off.
+  Keep customer data off the free Gemini tier, because Google may use free-tier inputs. Don't move the billing API off Workers/Supabase for the sake of GCP. GPU, Vertex AI after the trial and Marketplace billing are paid, so the Cumulus GPU and inference meters have no GCP capacity behind them. Back them with another provider or keep them off. Google for Startups Cloud credits (free to apply) are the one way to get GPU supply without spending.
+- **Billing safety.** Stay on the GCP trial account, which can't bill, or connect budgets to Pub/Sub to switch billing off. Budget alerts alone don't cap spending.
+- **Cumulus unit economics.** Some meters are priced at or below supply cost. These are approximate list prices; confirm them in each provider's pricing calculator before pay-as-you-go goes live:
+
+  | Meter | Our price | Approx. supply cost | Action |
+  |---|---|---|---|
+  | `cumulus_egress_gb` | $0.05 | Google Cloud/AWS internet egress ≈ $0.08–0.12 | **Below cost.** Serve downloads from Cloudflare R2 (no egress fees) or raise the price |
+  | `cumulus_storage_gb_month` | $0.02 | GCS Standard ≈ $0.020; R2 ≈ $0.015 | Little or no margin. Use R2 or colder tiers |
+  | `cumulus_gpu_hour` | $2.20 | L4 ≈ $0.70; A100 ≈ $3.70 | Split into one meter per GPU class |
+  | `cumulus_vcpu_hour` | $0.04 | ≈ $0.02–0.03 on demand | Thin margin. Spot instances widen it |
+- **Other hosts.** Conjure runs on AWS us-east-2, Cumulus://Mail has a CloudFront mirror, and ÆTHER MIL™ Web is on Vercel (team SSO) with a Cloudflare preview. Add no further paid providers. Each one adds billing, IAM and another point of failure.
 
 ## 8. Highest-leverage next moves
 
@@ -121,3 +133,5 @@ Earnings land in a USD ledger. They are held 7–14 days to cover refunds and di
 13. On or after 7 Jan 2027, transfer infinitumcorporation.ai and infinitumdefense.com to Cloudflare Registrar (unlock and get auth codes in Vercel, then pay in Cloudflare). That puts DNS, registration and the Workers stack in one place, and renewals at cost.
 14. Set `STRIPE_WEBHOOK_SECRET` (and `ADMIN_API_KEY`) on the revenue Worker with `npx wrangler secret put`, which brings the API back. Then merge #6, deploy the Worker, check `GET /v1/drop`, and only then deploy /drop on infinitumcorporation.ai, so the page never goes live against a broken API.
 15. Rewrite every public chain claim to Solana-only before the drop: firmnetwork.app (/network hero, migration path, token table, roadmap phase 02), firmwallet.app copy and the corporate /tokens page. Set pool sizes for the drop's final terms at the same time.
+16. **Fix the Cumulus meters that may lose money (§7)** before Cumulus Cloud pay-as-you-go goes live. Egress is the urgent one.
+17. **Apply to Google for Startups Cloud** (free). Credits are the only way GPU and inference supply fits the free-tier policy in §7.
