@@ -108,6 +108,20 @@ Public access (since 2026-11-11):
 - Checked from outside: `/healthz` 200, `/` 303 to `/login`, `/login` 200 with "Sign in with Cumulus ID" and "Create a Cumulus ID", `/api/status` 401 without a session, HTTP 301 to HTTPS. Preview `/` returns 400 "bad path" from Conjure itself (it only serves deliverable paths).
 - Cumulus ID: id.cumuluscloud.app loads from this server (200, ~0.3 s), so no mirror is needed from the data centre. Consumer ISPs in Russia were not tested. Sign-in was rejected ("didn't come from an Infinitum product") because the `conjure` client accepted only loopback redirects. Fixed in InfinitumCorp/infinitum-nexus#130 (adds this origin). It works after that PR is merged and id.cumuluscloud.app is deployed.
 
+## Russia codebases (since 2026-11-11)
+
+Each Russia deployment has its own public repo holding what differs for Russia (setup, TLS, backups, checks). The app code stays in the main repo, pinned by version or commit. No secrets in either: they are generated on the servers.
+
+| Repo | Server | What it holds |
+|---|---|---|
+| [InfinitumCorp/fabric-ru](https://github.com/InfinitumCorp/fabric-ru) | fabric-russia | Synapse + Postgres compose, the closed/no-federation settings, `setup-server.sh`, `setup-tls.sh`, `setup-backups.sh`, `check.sh` |
+| [InfinitumCorp/conjure-ru](https://github.com/InfinitumCorp/conjure-ru) | conjure-russia | `setup.sh` (pinned Conjure SHA, systemd, nginx, TLS; never Anthropic) and `check.sh` |
+| [InfinitumCorp/scalvs-ru](https://github.com/InfinitumCorp/scalvs-ru) | infinitum-product-1/2/3 | The scalvs.app Russia mirror (existing) |
+
+- Verified 2026-11-11: fabric-ru's setup produces the live config from scratch (Postgres, client-only listener, closed, no federation) and is safe to re-run. conjure-ru's setup re-ran end to end on conjure-russia (same release, HTTPS kept). Both `check.sh` scripts pass against the live servers.
+- CI per repo: shellcheck on push/PR. The live checks run only on manual dispatch, so no scheduled minutes are used.
+- Defense products (AETHER, ARGUS, ODIN, E(O)N) get no Russia version or server.
+
 ## Using the servers for builds
 
 Today every InfinitumCorp repo is public, so GitHub-hosted runners are free, and the Grok Bot box already has an `infinitum-ci` runner registered per repo as the fallback. Using these paid servers for general CI would cost money for work GitHub does for free. Their value is what only a machine inside Russia can do:
