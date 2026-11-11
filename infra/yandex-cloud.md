@@ -132,4 +132,5 @@ Rules for the runners:
 - Snapshot schedule `daily-data-servers` (`fd8l3q6kcg93enulpjuj`), status ACTIVE: every day at 00:00 UTC (03:00 Moscow), keeps the 7 newest snapshots per disk.
 - Disks: fabric-russia boot disk `fv47vc5b05rn5m6kevcm` (ru-central1-d) and conjure-russia boot disk `fhmk1prc30bfksuvj8ml` (ru-central1-a).
 - Snapshots are billed per GB stored (incremental after the first). Restore: create a disk from a snapshot, then a VM from that disk.
-- Fabric's Postgres is snapshotted live (crash-consistent). Add a nightly `pg_dump` before the snapshot if point-in-time consistency matters.
+- Fabric's Postgres is snapshotted live (crash-consistent), so a clean dump is taken first: systemd timer `fabric-pgdump.timer` on fabric-russia runs `/usr/local/sbin/fabric-pgdump` daily at 23:40 UTC (`pg_dump -Fc` of the `synapse` DB via `docker compose exec`), writes `/var/backups/fabric/synapse-YYYYMMDD.dump` (root-only, mode 600), keeps 7. The 00:00 UTC snapshot then carries it. First run 2026-11-11: 288 KB, 176 tables, `pg_restore --list` reads it.
+- Restore the DB from a dump: `docker compose exec -T db pg_restore -U synapse -d synapse --clean < /var/backups/fabric/synapse-YYYYMMDD.dump` (stop the `synapse` container first).
