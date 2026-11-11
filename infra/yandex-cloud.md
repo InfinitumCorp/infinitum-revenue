@@ -99,6 +99,7 @@ Conjure's own server in Russia. No Claude: `ANTHROPIC_API_KEY` is never set here
 - systemd `conjure.service` as the non-root `conjure` user, `127.0.0.1:4317` (app) and `:4318` (preview), sandboxed like the AWS deploy. Data: `/var/lib/conjure`, `/var/lib/conjure-data`.
 - `/etc/conjure/env` (root-only, never committed) holds a random `CONJURE_ACCESS_TOKEN`, so sign-in is required. Slots to fill on the server: `CID_OWNERS` (your Cumulus ID; until set nobody can sign in), optional `CID_ISSUER` (Russia mirror), and the `CONJURE_LLM_*` gateway values to leave mock mode. Then `sudo systemctl restart conjure`.
 - Mode on start: "offline: mock provider, sign-in required".
+- `CID_OWNERS` set 2026-11-11 to William's account email (Conjure matches it against the Cumulus ID profile's email, username, handle or cid). If his Cumulus ID uses a different email, replace it with his `cid_...` and restart.
 
 Public access (since 2026-11-11):
 
