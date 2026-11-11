@@ -164,6 +164,15 @@ Rules for the runners:
 - Raise the SSD quota to 30–50 GB per zone first; 7 GB free is too little for node_modules/Docker builds.
 - Excluded from these runners: defense products (AETHER, infinitumdefense.com, E(O)N).
 
+## OpenClaw capability test on russia-web (2026-11-12)
+
+Temporary, approved by William; everything was removed afterwards (user `octest`, `/opt/openclaw-test`, ports 11434/18789). Purpose: can a Yandex server in Russia run SCALVS.ai's OpenClaw engine (InfinitumCorp/scalvs-ai#22)?
+
+- Downloads from Russia without a VPN all worked: nodejs.org (3 s), Ollama 0.40.16 from GitHub (1.4 GB, ~10 min), the `qwen3:0.6b` model from Ollama's registry (~40 s), OpenClaw from npm (~2 min), scalvs-ai from GitHub.
+- The OpenClaw gateway started and answered on 127.0.0.1:18789.
+- The model did not run: OpenClaw asks for a 32k-token context, and with the gateway up the 2 vCPU / 4 GB server ran out of memory. The kernel killed only the test's `llama-server`. nginx and the three sites stayed up.
+- Conclusion: a 4 GB server can host the gateway but not the model as well. For an all-Russia OpenClaw setup, run the model on a server with 8 GB or more (or a GPU), or put the gateway here and the model elsewhere.
+
 ## Follow-ups
 
 - Reserve static IPs if DNS will point at these servers (dynamic IPs change on stop/start).
