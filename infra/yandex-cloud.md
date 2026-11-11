@@ -69,7 +69,7 @@ Everything else inbound is dropped (verified from Cloud Shell). If the admin IP 
 
 Dedicated server for Fabric's Russia homeserver. Fabric's existing Cloudflare setup stays as it is; this is an additional Russia deployment, not a move.
 
-- VM `fabric-russia` (created as `infinitum-fabric-ru`; the Yandex rename is still pending because the console kept dropping), zone ru-central1-d, 2 vCPU, 4 GB RAM, 20 GB SSD, Ubuntu 24.04, same `infinitum-product-sg` firewall. SSH: `ssh fabric-russia`.
+- VM `fabric-russia` (created as `infinitum-fabric-ru`, renamed 2026-11-11), zone ru-central1-d, 2 vCPU, 4 GB RAM, 20 GB SSD, Ubuntu 24.04, same `infinitum-product-sg` firewall. SSH: `ssh fabric-russia`.
 - Quota raised 2026-11-11 (approved instantly): 6 vCPU and 50 GB SSD per zone in a/d/e. Zone b is closed to new VMs; zone f has a 0-disk quota (an unused `default-ru-central1-f` subnet exists).
 - A first copy ran on infinitum-product-1 while the quota was blocked. Its containers are stopped; `/opt/fabric` there can be deleted.
 
@@ -88,6 +88,18 @@ Public access (since 2026-11-11):
 - nginx + Let's Encrypt (certbot webroot, registered without an email; auto-renews via `certbot.timer` with an nginx reload hook). Cert valid to 2027-02-09.
 - `https://ru.infinitumfabric.app`: `/.well-known/matrix/client` returns the base URL; only `/_matrix/client` and `/_synapse/client` reach Synapse. `/_synapse/admin`, federation and everything else return 404. HTTP redirects to HTTPS.
 - Checked from outside: client versions 200, registration without a token 403, admin 404, federation 404.
+
+## Conjure Russia (`conjure-russia`, since 2026-11-11)
+
+Conjure's own server in Russia. No Claude: `ANTHROPIC_API_KEY` is never set here. With no `CONJURE_LLM_*` values it runs on the mock provider.
+
+- VM `conjure-russia`, zone ru-central1-a, 2 vCPU, 4 GB RAM, 20 GB SSD, Ubuntu 24.04, `infinitum-product-sg` firewall, labels `product=conjure,region=russia`. SSH: `ssh conjure-russia`.
+- Static IP 51.250.92.75 (Yandex address `conjure-russia-ip`).
+- Code: InfinitumCorp/Conjure at `1da489e` (main, "staff sign in with Cumulus ID") in `/opt/conjure/releases/<sha>`, `current` symlink. Node v24.11.0 (checksum-verified), `npm ci --omit=dev`.
+- systemd `conjure.service` as the non-root `conjure` user, `127.0.0.1:4317` (app) and `:4318` (preview), sandboxed like the AWS deploy. Data: `/var/lib/conjure`, `/var/lib/conjure-data`.
+- `/etc/conjure/env` (root-only, never committed) holds a random `CONJURE_ACCESS_TOKEN`, so sign-in is required. Slots to fill on the server: `CID_OWNERS` (your Cumulus ID; until set nobody can sign in), optional `CID_ISSUER` (Russia mirror), and the `CONJURE_LLM_*` gateway values to leave mock mode. Then `sudo systemctl restart conjure`.
+- nginx on 80 serves ACME challenges and redirects to HTTPS. Checked on the server: `/healthz` 200, `/` 303 to `/login`, mode "offline: mock provider, sign-in required".
+- Pending: Cloudflare DNS-only A records `conjure-ru` and `conjure-ru-preview.infinitumcorporation.ai` → 51.250.92.75, then re-run the setup script for Let's Encrypt and the HTTPS sites (app → 4317, preview → 4318).
 
 ## Using the servers for builds
 
