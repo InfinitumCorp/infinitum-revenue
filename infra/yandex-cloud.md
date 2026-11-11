@@ -98,8 +98,14 @@ Conjure's own server in Russia. No Claude: `ANTHROPIC_API_KEY` is never set here
 - Code: InfinitumCorp/Conjure at `1da489e` (main, "staff sign in with Cumulus ID") in `/opt/conjure/releases/<sha>`, `current` symlink. Node v24.11.0 (checksum-verified), `npm ci --omit=dev`.
 - systemd `conjure.service` as the non-root `conjure` user, `127.0.0.1:4317` (app) and `:4318` (preview), sandboxed like the AWS deploy. Data: `/var/lib/conjure`, `/var/lib/conjure-data`.
 - `/etc/conjure/env` (root-only, never committed) holds a random `CONJURE_ACCESS_TOKEN`, so sign-in is required. Slots to fill on the server: `CID_OWNERS` (your Cumulus ID; until set nobody can sign in), optional `CID_ISSUER` (Russia mirror), and the `CONJURE_LLM_*` gateway values to leave mock mode. Then `sudo systemctl restart conjure`.
-- nginx on 80 serves ACME challenges and redirects to HTTPS. Checked on the server: `/healthz` 200, `/` 303 to `/login`, mode "offline: mock provider, sign-in required".
-- Pending: Cloudflare DNS-only A records `conjure-ru` and `conjure-ru-preview.infinitumcorporation.ai` → 51.250.92.75, then re-run the setup script for Let's Encrypt and the HTTPS sites (app → 4317, preview → 4318).
+- Mode on start: "offline: mock provider, sign-in required".
+
+Public access (since 2026-11-11):
+
+- Cloudflare DNS-only A records (TTL 300) in zone infinitumcorporation.ai → 51.250.92.75: `conjure-ru` (record id `a527c0a9b55e74f90e009082e3aecc3c`) and `conjure-ru-preview` (`84250d9ab1c33da047266d83e050baac`).
+- nginx + Let's Encrypt, one cert for both names (webroot, no email, auto-renews via `certbot.timer` with an nginx reload hook). Valid to 2027-02-09. HTTP redirects to HTTPS; HSTS on the app host.
+- `https://conjure-ru.infinitumcorporation.ai` → 127.0.0.1:4317, `https://conjure-ru-preview.infinitumcorporation.ai` → 127.0.0.1:4318 (streaming: proxy buffering off).
+- Checked from outside: `/healthz` 200, `/` 303 to `/login`, `/login` 200 with "Sign in with Cumulus ID" and "Create a Cumulus ID", `/api/status` 401 without a session, HTTP 301 to HTTPS. Preview `/` returns 400 "bad path" from Conjure itself (it only serves deliverable paths).
 
 ## Using the servers for builds
 
