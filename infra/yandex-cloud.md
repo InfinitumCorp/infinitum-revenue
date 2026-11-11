@@ -58,7 +58,14 @@ Everything else inbound is dropped (verified from Cloud Shell). If the admin IP 
 - That is why the boot disks are 10 GB and there is one server per zone.
 - To grow disks or add a second server in a zone, request an increase on the console's Quotas page first.
 
-## Using the servers for builds (proposal, not set up yet)
+## scalvs-ru (live on all three servers since 2026-11-11)
+
+- nginx on each server serves `/var/www/scalvs-ru` as the default site and for `Host: ru.scalvs.app` (HTTP only until DNS and TLS move).
+- GitHub runners `yandex-ru-1/2/3` (labels `yandex-ru`, `yandex-ru-N`) are registered to InfinitumCorp/scalvs-ru and run as the non-root `runner` user under systemd.
+- Workflow `deploy-yandex.yml` (scalvs-ru PR #4) rsyncs `main` to all three on every push to main; never on pull requests.
+- DNS for ru.scalvs.app still points at GitHub Pages. Moving it here needs static IPs, a DNS change and certbot.
+
+## Using the servers for builds
 
 Today every InfinitumCorp repo is public, so GitHub-hosted runners are free, and the Grok Bot box already has an `infinitum-ci` runner registered per repo as the fallback. Using these paid servers for general CI would cost money for work GitHub does for free. Their value is what only a machine inside Russia can do:
 
