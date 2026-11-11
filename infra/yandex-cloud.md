@@ -80,7 +80,14 @@ Setup on fabric-russia:
 - Closed registration (no token → 403), federation listener removed (→ 404), empty `federation_domain_whitelist` and `trusted_key_servers`.
 - Synapse listens on `127.0.0.1:8008` only. It is not reachable from the internet until nginx + TLS on a real hostname are added.
 - DB password lives only in `/opt/fabric/.env` on the server (mode 600).
-- Next: static IP, DNS for ru.infinitumfabric.app, nginx + TLS in front of 127.0.0.1:8008.
+
+Public access (since 2026-11-11):
+
+- Static IP 81.26.185.34 (Yandex address `fl8u8jbn8a1vp9hpmjdt`, made static).
+- Cloudflare DNS: `A ru.infinitumfabric.app → 81.26.185.34`, DNS only (not proxied), TTL 300. Record id `c455c1d5f5bf0fad34f8b222e57c9f90` in zone infinitumfabric.app.
+- nginx + Let's Encrypt (certbot webroot, registered without an email; auto-renews via `certbot.timer` with an nginx reload hook). Cert valid to 2027-02-09.
+- `https://ru.infinitumfabric.app`: `/.well-known/matrix/client` returns the base URL; only `/_matrix/client` and `/_synapse/client` reach Synapse. `/_synapse/admin`, federation and everything else return 404. HTTP redirects to HTTPS.
+- Checked from outside: client versions 200, registration without a token 403, admin 404, federation 404.
 
 ## Using the servers for builds
 
