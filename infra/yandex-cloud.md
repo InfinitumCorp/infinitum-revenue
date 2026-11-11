@@ -65,6 +65,18 @@ Everything else inbound is dropped (verified from Cloud Shell). If the admin IP 
 - Workflow `deploy-yandex.yml` (scalvs-ru PR #4) rsyncs `main` to all three on every push to main; never on pull requests.
 - DNS for ru.scalvs.app still points at GitHub Pages. Moving it here needs static IPs, a DNS change and certbot.
 
+## Fabric homeserver (temporary home: infinitum-product-1, since 2026-11-11)
+
+A dedicated Fabric server could not be created: Yandex has closed ru-central1-b to new VMs and zones a/d/e are at the 2-vCPU quota. Until the quota is raised, Fabric's Russia homeserver runs on infinitum-product-1.
+
+- `/opt/fabric`: Docker Compose with `matrixdotorg/synapse:v1.164.2` and `postgres:16`, matching InfinitumCorp/fabric `server/docker-compose.yml`.
+- `server_name: ru.infinitumfabric.app` (permanent: it becomes part of every user ID).
+- Closed registration (no token → 403), federation listener removed (→ 404), empty `federation_domain_whitelist` and `trusted_key_servers`.
+- Synapse listens on `127.0.0.1:8008` only. It is not reachable from the internet until nginx + TLS on a real hostname are added.
+- DB password lives only in `/opt/fabric/.env` on the server (mode 600). An unused `homeserver.db` from the first boot is still in `/opt/fabric/data` and can be deleted.
+
+To move it to its own server later: stop the stack, copy `/opt/fabric`, start it on the new VM.
+
 ## Using the servers for builds
 
 Today every InfinitumCorp repo is public, so GitHub-hosted runners are free, and the Grok Bot box already has an `infinitum-ci` runner registered per repo as the fallback. Using these paid servers for general CI would cost money for work GitHub does for free. Their value is what only a machine inside Russia can do:
