@@ -5,7 +5,7 @@ Prices are **proposed launch prices** (in `src/catalog.ts`), set to be reviewed,
 
 **Last reviewed:** 2026-11-09. The revenue API runs on Cloudflare Workers with the shared Supabase Postgres.
 
-*Last updated 9 Nov 2026: added the $FIRM Suite and $FIRM Wallet, @conjure live predictions and the Genesis Drop. Also flagged the conflict between the site's data-sharing split and the backend's (§4). Later the same day: added the CryptoPublicOffering™ launch (§5), the REVshare terms (§6) and distribution, hosting and the GCP free-tier policy (§7). Then: DNS for both corporate domains moved to Cloudflare, with the registrar transfer due from 7 Jan 2027 (§7, next move #16). Later still: **Infinitum tokens are Solana-only** (§5 rewritten), and the Genesis Drop status and deploy blockers are updated (§2, §7, next moves #17–#18). Last: added the AWS project and its Free-plan policy (§7, next moves #20–#21). Then: corporate email on Cloudflare Email Routing (§7), and corrections from a check against the code: one shared waitlist KV (§5), per-program earnings holds including 30 days for referrals (§6), the missing downloads build script and Workers Paid (§7, next move #22). 10 Nov 2026: merged with main (§0 status table, 85% data share everywhere); §4 now records that decision, §6 shows 85/15, and next moves are renumbered.*
+*Last updated 9 Nov 2026: added the $FIRM Suite and $FIRM Wallet, @conjure live predictions and the Genesis Drop. Also flagged the conflict between the site's data-sharing split and the backend's (§4). Later the same day: added the CryptoPublicOffering™ launch (§5), the REVshare terms (§6) and distribution, hosting and the GCP free-tier policy (§7). Then: DNS for both corporate domains moved to Cloudflare, with the registrar transfer due from 7 Jan 2027 (§7, next move #16). Later still: **Infinitum tokens are Solana-only** (§5 rewritten), and the Genesis Drop status and deploy blockers are updated (§2, §7, next moves #17–#18). Last: added the AWS project and its Free-plan policy (§7, next moves #20–#21). Then: corporate email on Cloudflare Email Routing (§7), and corrections from a check against the code: one shared waitlist KV (§5), per-program earnings holds including 30 days for referrals (§6), the missing downloads build script and Workers Paid (§7, next move #22). 10 Nov 2026: merged with main (§0 status table, 85% data share everywhere); §4 now records that decision, §6 shows 85/15, and next moves are renumbered. Then: ÆTHER MIL™ and @conjure's cost role (§2), the Cumulus unit-economics flags (§7) and billing safety (§7, next moves #23–#24).*
 
 ## 0. Where things stand (2026-11-09)
 
@@ -39,7 +39,7 @@ The products with users today (SCALVS.ai, :\ARCHITECT\, VEIL) are free. **No liv
 | 9 | **Buyer-funded Missions** (bounty + 15–20% fee) | [HRVST], Cumulus | `missions`, submissions, review |
 | 10 | **Enterprise / sales-assisted tiers** (KYB / purpose review before purchase) | ei·det·ic, SCALVS Private Tenant, Spectre Enterprise, Firmament Permissioned, [HRVST] Buyer, Rack | `admin/orgs/:id/approve` |
 | 11 | **Contracted services billed by milestone** | IT, security, engineering, PM consulting; narrative intelligence; Cognitive / Reflexive Capital / Irregular Warfare advisory; managed services; implementation | `admin/engagements`, milestone invoices |
-| 12 | **Defense contracts** (never self-serve, outside the token economy, defense-verified orgs only) | ODIN° and the 18 MIL editions, DAEMON WARDEN/ZENITH, Cumulus Sovereign | Contract channel + `verify-defense` gate |
+| 12 | **Defense contracts** (never self-serve, outside the token economy, defense-verified orgs only) | ODIN° and the 18 MIL editions, ÆTHER MIL™ (ODIN°'s comms layer), DAEMON WARDEN/ZENITH, Cumulus Sovereign | Contract channel + `verify-defense` gate |
 | 13 | **Partner referrals** (20% of referred invoices for 12 months) | VEIL as the free funnel into every paid product; resellers; integrators | `referral-codes`, auto commission |
 
 ## 2. Product by product
@@ -63,6 +63,8 @@ The products with users today (SCALVS.ai, :\ARCHITECT\, VEIL) are free. **No liv
 | **$FIRM Wallet™** | Built (infinitum-nexus #67, merged). Self-custody on ETH/Base/Arbitrum/Solana, Uniswap and Jupiter swaps, tokenized stocks, Hyperliquid perps and spot, Derive options data, read-only Polymarket and Kalshi, Conjure signals, and $FIRM Mini for Telegram. It defaults to testnet and is not deployed. **Infinitum takes no fee in it today**: it earns indirectly through the Suite and METATRON. Possible later revenue: Hyperliquid builder fees, a swap fee and venue referral programmes. All of these sit behind the counsel review in §3 |
 | **$FIRM / product tokens** | See section 3. Not switched on in the backend. The Genesis Drop (1 Jan 2027, snapshot 31 Dec 23:00 UTC) collects Solana wallet registrations only (10 tokens, three early-viewer tiers: Genesis #1–1,000 ×3, Vanguard #1,001–10,000 ×2, Wave ×1; 5 new wallets per IP per day). API merged in [InfinitumCorp/infinitum-revenue#6](https://github.com/InfinitumCorp/infinitum-revenue/pull/6) and its Supabase table is applied, but the Worker is not deployed. The /drop page on infinitumcorporation.ai is built but **not deployed**, and pool sizes are still "announced with final terms" |
 | **ODIN°** | Multi-year defense contracts, milestone-invoiced, confidential descriptions on invoices |
+| **ÆTHER MIL™** | ODIN°'s secure comms and mesh layer (Talk, Mesh, Vault; post-quantum handshake, device certificates). Defense-only, with no commercial edition and outside the token economy. It is sold inside ODIN° contracts or as a per-unit/per-device licence under mechanism #12, never self-serve. The web build at infinitumaether.app sits behind Vercel team SSO. There is no catalog entry yet, because it is priced by contract |
+| **@conjure** | Not sold on its own. It is the prediction engine inside the products, metered as METATRON prediction runs, SCALVS tasks and +SPCTR credits. Each product key has a daily limit. Without an Anthropic key it falls back to a free open-source model (Ollama). That fallback keeps free-plan forecasts close to zero cost, so only paid plans need to run on Claude |
 | **Academy** | $29/mo membership; certifications for partners and integrators (feeds the referral channel) |
 
 ## 3. What I deliberately did not switch on
@@ -116,7 +118,7 @@ Earnings land in a USD ledger. They are held to cover refunds and disputes: 14 d
   - Small Cloud Storage
   - The Gemini API free tier, for prototypes only
 
-  Keep customer data off the free Gemini tier, because Google may use free-tier inputs. Don't move the billing API off Workers/Supabase for the sake of GCP. GPU, Vertex AI after the trial and Marketplace billing are paid, so the Cumulus GPU and inference meters have no GCP capacity behind them. Back them with another provider or keep them off.
+  Keep customer data off the free Gemini tier, because Google may use free-tier inputs. Don't move the billing API off Workers/Supabase for the sake of GCP. GPU, Vertex AI after the trial and Marketplace billing are paid, so the Cumulus GPU and inference meters have no GCP capacity behind them. Back them with another provider or keep them off. Google for Startups Cloud credits (free to apply) are the one way to get GPU supply without spending.
 - **Russia: the apps must work there without a VPN, but most of the stack is blocked.** These results were measured on 9 Nov 2026 on a phone on Russian home Wi-Fi with no VPN.
   - **Blocked or throttled:**
     - Cloudflare-proxied sites: most time out. scalvs.app's HTML loads, but its JavaScript stalls for about 30 s, so the page never leaves "Loading…".
@@ -136,6 +138,16 @@ Earnings land in a USD ledger. They are held to cover refunds and disputes: 14 d
   - Don't add metric dimensions, because each dimension combination counts as another custom metric.
   - Put the drop registration route (`POST /v1/drop/registrations`, PR #6) behind the same free reCAPTCHA check before the drop is announced. A token drop without bot checks invites one person registering many wallets.
   - Whether AWS is reachable from Russia hasn't been tested. Keep AWS out of every user-facing path for the Russia mirrors until it is measured.
+- **Billing safety.** Stay on the GCP trial account, which can't bill, or connect budgets to Pub/Sub to switch billing off. Budget alerts alone don't cap spending.
+- **Cumulus unit economics.** Some meters are priced at or below supply cost. These are approximate list prices; confirm them in each provider's pricing calculator before pay-as-you-go goes live:
+
+  | Meter | Our price | Approx. supply cost | Action |
+  |---|---|---|---|
+  | `cumulus_egress_gb` | $0.05 | Google Cloud/AWS internet egress ≈ $0.08–0.12 | **Below cost.** Serve downloads from Cloudflare R2 (no egress fees) or raise the price |
+  | `cumulus_storage_gb_month` | $0.02 | GCS Standard ≈ $0.020; R2 ≈ $0.015 | Little or no margin. Use R2 or colder tiers |
+  | `cumulus_gpu_hour` | $2.20 | L4 ≈ $0.70; A100 ≈ $3.70 | Split into one meter per GPU class |
+  | `cumulus_vcpu_hour` | $0.04 | ≈ $0.02–0.03 on demand | Thin margin. Spot instances widen it |
+- **Other hosts.** Conjure runs on AWS us-east-2, Cumulus://Mail has a CloudFront mirror, and ÆTHER MIL™ Web is on Vercel (team SSO) with a Cloudflare preview. Add no further paid providers. Each one adds billing, IAM and another point of failure.
 
 ## 8. Highest-leverage next moves
 
@@ -161,3 +173,5 @@ Earnings land in a USD ledger. They are held to cover refunds and disputes: 14 d
 20. Finish PR #7 (reCAPTCHA, SNS and CloudWatch) under the AWS rules in §7, then add `verifyRecaptcha` to the drop registration route now that #6 has landed. Both should ship before the drop is announced.
 21. Before **7 May 2027**, decide whether AWS stays: upgrade the project to the paid plan with a budget alert, or move the SNS and CloudWatch work to Cloudflare Queues and Workers Analytics Engine, which are already in the stack.
 22. Clean up the loose ends in §7. Commit `_tools/build-downloads.mjs` to `infinitum-corporation-site`, or rewrite the downloads steps. Then either finish sending email from the corporate addresses (onboard both domains for Cloudflare Email Sending and add the Gmail Send-as identities) or cancel Workers Paid.
+23. **Fix the Cumulus meters that may lose money (§7)** before Cumulus Cloud pay-as-you-go goes live. Egress is the urgent one.
+24. **Apply to Google for Startups Cloud** (free). Credits are the only way GPU and inference supply fits the free-tier policy in §7.
