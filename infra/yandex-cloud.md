@@ -16,7 +16,7 @@ Created 2026-11-11 for the Infinitum product's Russia footprint.
 | infinitum-product-2 | ru-central1-d | standard-v3 (Ice Lake), 100% | 2 | 4 GB | 10 GB network-ssd | Ubuntu 24.04 LTS |
 | infinitum-product-3 | ru-central1-e | standard-v3 (Ice Lake), 100% | 2 | 4 GB | 10 GB network-ssd | Ubuntu 24.04 LTS |
 
-- Each has a dynamic public IPv4 (NAT) on the zone's `default-ru-central1-*` subnet and the network's default security group.
+- Each has a dynamic public IPv4 (NAT) on the zone's `default-ru-central1-*` subnet.
 - Label: `product=infinitum`.
 - Zone ru-central1-b is skipped on purpose (Yandex status warnings at creation time).
 - Public IPs are not listed here because this repo is public. Get them with:
@@ -26,6 +26,20 @@ Created 2026-11-11 for the Infinitum product's Russia footprint.
 
 - SSH key only, user `yc-user`. The key is `yandex_infinitum` (ed25519) on William's PC. The private key is never committed.
 - Host shortcuts are in `~/.ssh/config` on that PC: `ssh infinitum-product-1` (and -2, -3).
+
+## Firewall
+
+All three servers use security group `infinitum-product-sg` (`enpcv3ntnffkgvkgv0a5`), attached 2026-11-11:
+
+| Direction | Port | From / to | Why |
+|---|---|---|---|
+| in | 22/tcp | William's admin IP only (/32) | SSH |
+| in | 80, 443/tcp | anywhere | web |
+| in | ICMP | anywhere | ping |
+| in | any | the same group | server-to-server |
+| out | any | anywhere | updates, GitHub, registries |
+
+Everything else inbound is dropped (verified from Cloud Shell). If the admin IP changes, SSH stops working: update the port-22 rule from the console or Cloud Shell, which do not need SSH.
 
 ## Cost (console calculator, VAT incl., per server per month)
 
@@ -44,8 +58,21 @@ Created 2026-11-11 for the Infinitum product's Russia footprint.
 - That is why the boot disks are 10 GB and there is one server per zone.
 - To grow disks or add a second server in a zone, request an increase on the console's Quotas page first.
 
+## Using the servers for builds (proposal, not set up yet)
+
+Today every InfinitumCorp repo is public, so GitHub-hosted runners are free, and the Grok Bot box already has an `infinitum-ci` runner registered per repo as the fallback. Using these paid servers for general CI would cost money for work GitHub does for free. Their value is what only a machine inside Russia can do:
+
+1. **Deploy the Russia mirrors from inside Russia.** Build on GitHub-hosted runners as now, then a deploy job on a Yandex runner (label `yandex-ru`) pulls the artifact and serves it from these servers with nginx on 80/443. Candidates: `scalvs-ru` (today on GitHub Pages, which is unreliable in Russia) and the Cumulus ID mirror needed for "works in Russia without a VPN".
+2. **Smoke-test from Russia.** A scheduled-on-deploy (not cron) job on a `yandex-ru` runner checks that id.cumuluscloud.app's mirror, scalvs-ru and other Russia-facing apps load and sign in from a Russian IP.
+3. **Overflow builds.** Register them as extra `infinitum-ci` runners, used only if `CI_RUNNER=infinitum-ci` is ever set.
+
+Rules for the runners:
+- Trigger only on `push` to the default branch and `workflow_dispatch`, never `pull_request` from forks: the repos are public, so a fork PR could otherwise run code on these servers. Keep "Require approval for all outside collaborators" on in each repo's Actions settings.
+- One runner per repo per server (personal account, so no org-level runners), run as a non-root `runner` user, ephemeral where possible.
+- Raise the SSD quota to 30–50 GB per zone first; 7 GB free is too little for node_modules/Docker builds.
+- Excluded from these runners: defense products (AETHER, infinitumdefense.com, E(O)N).
+
 ## Follow-ups
 
-- Lock down the default security group (allow 22 from known IPs, 80/443 public) before anything is exposed.
 - Reserve static IPs if DNS will point at these servers (dynamic IPs change on stop/start).
 - Set up disk snapshot schedules for backups (Cloud Backup is off).
