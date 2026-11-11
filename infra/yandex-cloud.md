@@ -125,4 +125,11 @@ Rules for the runners:
 ## Follow-ups
 
 - Reserve static IPs if DNS will point at these servers (dynamic IPs change on stop/start).
-- Set up disk snapshot schedules for backups (Cloud Backup is off).
+- Product servers 1-3 have no backups (they only hold the scalvs-ru mirror, which CI redeploys).
+
+## Backups (since 2026-11-11)
+
+- Snapshot schedule `daily-data-servers` (`fd8l3q6kcg93enulpjuj`), status ACTIVE: every day at 00:00 UTC (03:00 Moscow), keeps the 7 newest snapshots per disk.
+- Disks: fabric-russia boot disk `fv47vc5b05rn5m6kevcm` (ru-central1-d) and conjure-russia boot disk `fhmk1prc30bfksuvj8ml` (ru-central1-a).
+- Snapshots are billed per GB stored (incremental after the first). Restore: create a disk from a snapshot, then a VM from that disk.
+- Fabric's Postgres is snapshotted live (crash-consistent). Add a nightly `pg_dump` before the snapshot if point-in-time consistency matters.
