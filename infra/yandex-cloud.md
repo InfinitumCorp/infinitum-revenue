@@ -106,6 +106,7 @@ Public access (since 2026-11-11):
 - nginx + Let's Encrypt, one cert for both names (webroot, no email, auto-renews via `certbot.timer` with an nginx reload hook). Valid to 2027-02-09. HTTP redirects to HTTPS; HSTS on the app host.
 - `https://conjure-ru.infinitumcorporation.ai` → 127.0.0.1:4317, `https://conjure-ru-preview.infinitumcorporation.ai` → 127.0.0.1:4318 (streaming: proxy buffering off).
 - Checked from outside: `/healthz` 200, `/` 303 to `/login`, `/login` 200 with "Sign in with Cumulus ID" and "Create a Cumulus ID", `/api/status` 401 without a session, HTTP 301 to HTTPS. Preview `/` returns 400 "bad path" from Conjure itself (it only serves deliverable paths).
+- Cumulus ID: id.cumuluscloud.app loads from this server (200, ~0.3 s), so no mirror is needed from the data centre. Consumer ISPs in Russia were not tested. Sign-in was rejected ("didn't come from an Infinitum product") because the `conjure` client accepted only loopback redirects. Fixed in InfinitumCorp/infinitum-nexus#130 (adds this origin). It works after that PR is merged and id.cumuluscloud.app is deployed.
 
 ## Using the servers for builds
 
