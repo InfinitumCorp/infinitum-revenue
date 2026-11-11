@@ -65,17 +65,22 @@ Everything else inbound is dropped (verified from Cloud Shell). If the admin IP 
 - Workflow `deploy-yandex.yml` (scalvs-ru PR #4) rsyncs `main` to all three on every push to main; never on pull requests.
 - DNS for ru.scalvs.app still points at GitHub Pages. Moving it here needs static IPs, a DNS change and certbot.
 
-## Fabric homeserver (temporary home: infinitum-product-1, since 2026-11-11)
+## Fabric Russia (`fabric-russia`, since 2026-11-11)
 
-A dedicated Fabric server could not be created: Yandex has closed ru-central1-b to new VMs and zones a/d/e are at the 2-vCPU quota. Until the quota is raised, Fabric's Russia homeserver runs on infinitum-product-1.
+Dedicated server for Fabric's Russia homeserver. Fabric's existing Cloudflare setup stays as it is; this is an additional Russia deployment, not a move.
+
+- VM `fabric-russia` (created as `infinitum-fabric-ru`; the Yandex rename is still pending because the console kept dropping), zone ru-central1-d, 2 vCPU, 4 GB RAM, 20 GB SSD, Ubuntu 24.04, same `infinitum-product-sg` firewall. SSH: `ssh fabric-russia`.
+- Quota raised 2026-11-11 (approved instantly): 6 vCPU and 50 GB SSD per zone in a/d/e. Zone b is closed to new VMs; zone f has a 0-disk quota (an unused `default-ru-central1-f` subnet exists).
+- A first copy ran on infinitum-product-1 while the quota was blocked. Its containers are stopped; `/opt/fabric` there can be deleted.
+
+Setup on fabric-russia:
 
 - `/opt/fabric`: Docker Compose with `matrixdotorg/synapse:v1.164.2` and `postgres:16`, matching InfinitumCorp/fabric `server/docker-compose.yml`.
 - `server_name: ru.infinitumfabric.app` (permanent: it becomes part of every user ID).
 - Closed registration (no token → 403), federation listener removed (→ 404), empty `federation_domain_whitelist` and `trusted_key_servers`.
 - Synapse listens on `127.0.0.1:8008` only. It is not reachable from the internet until nginx + TLS on a real hostname are added.
-- DB password lives only in `/opt/fabric/.env` on the server (mode 600). An unused `homeserver.db` from the first boot is still in `/opt/fabric/data` and can be deleted.
-
-To move it to its own server later: stop the stack, copy `/opt/fabric`, start it on the new VM.
+- DB password lives only in `/opt/fabric/.env` on the server (mode 600).
+- Next: static IP, DNS for ru.infinitumfabric.app, nginx + TLS in front of 127.0.0.1:8008.
 
 ## Using the servers for builds
 
