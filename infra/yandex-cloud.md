@@ -165,7 +165,7 @@ How Russian clients reach their server: by the residency on their Cumulus ID acc
 | Conjure | `conjure-russia` | live |
 | Labyrinth | `labyrinth-russia` | created, nothing installed |
 | VEIL</> VPN (servers) | `infinitum-product-1/2/3` | live (in the apps after veil-vpn#21) |
-| Cumulus://ID | `cumulus-id-russia` | created 2026-11-12, zone a, IP 46.21.246.216 (dynamic), nothing installed |
+| Cumulus://ID | `cumulus-id-russia` | running 2026-11-12 ([InfinitumCorp/cumulus-id-ru](https://github.com/InfinitumCorp/cumulus-id-ru)): separate issuer `https://ru-id.cumuluscloud.app/realms/cumulus`, zone a, IP 46.21.246.216 (dynamic). HTTPS waits for the `ru-id` DNS record |
 | SCALVS.ai (app and ru.scalvs.app) | `scalvs-russia` | created 2026-11-12, zone d, internal 10.130.0.9, no public IP yet (8 GB if the OpenClaw model runs there) |
 | Cumulus://Mail | `cumulus-mail-russia` | created 2026-11-12, zone d, internal 10.130.0.32, no public IP yet |
 | Cumulus Vault | `cumulus-vault-russia` | created 2026-11-12, zone a, internal 10.128.0.17, no public IP yet |
@@ -196,7 +196,7 @@ Quota request `atdoucumc9trjkpo5irg` (2026-11-12, filed from Cloud Shell with `y
 
 All five servers made on 2026-11-12: standard-v3 2 vCPU 100%, 4 GB, 20 GB network-ssd, Ubuntu 24.04, `infinitum-product-sg`, user `yc-user` with the `yandex_infinitum` key, boot disks added to `daily-data-servers`. SSH entries are in `~/.ssh/config` on William's PC (the internal-only ones jump through `russia-web`).
 
-SSH from William's PC stopped working on 2026-11-12: the PC's IP is back to 89.105.195.154, and `infinitum-product-sg` allows SSH only from 89.105.195.157 (rule `enp6g6csg5i3jvah2u45`). Add .154 beside it (or switch it) in the console to restore access.
+SSH admin IPs: `infinitum-product-sg` allows port 22 from both of William's IPs, 89.105.195.157 and 89.105.195.154 (the .154 rule `ssh-admin-alt` added 2026-11-12). SSH from the PC to Russia is flaky at times ("timed out during banner exchange" while the server is idle); retrying works.
 
 Cost: about 3,200 ₽ per server per month with a 20 GB disk and a static IP, so about 51,000 ₽ a month for the 16 new ones, on top of the current servers.
 
