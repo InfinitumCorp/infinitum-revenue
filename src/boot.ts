@@ -30,6 +30,7 @@ export async function bootFromEnv(opts: { worker?: boolean } = {}) {
       returnHosts: (process.env.RETURN_HOSTS ?? "rchtch.app,scalvs.app,cumuluscloud.app,mttrn.app,infinitumcorporation.ai,infinitumcorp.workers.dev")
         .split(",").map((h) => h.trim().toLowerCase()).filter(Boolean),
       adminApiKey: adminApiKey.length >= 32 ? adminApiKey : "",
+      cidPartnerKey: (process.env.CID_PARTNER_KEY ?? "").length >= 32 ? process.env.CID_PARTNER_KEY : "",
       licenceSigningKeyPem: process.env.LICENCE_SIGNING_KEY?.replace(/\\n/g, "\n"),
       tokenPayoutsEnabled: process.env.TOKEN_PAYOUTS_ENABLED === "true",
     },

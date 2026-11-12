@@ -37,9 +37,25 @@ export function createApp(ctx: Ctx, opts: { conjure?: ConjureRouteHandler } = {}
 
   const bearer = (c: Context) => c.req.header("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
 
+  const sameSecret = (k: string, secret: string | undefined) => {
+    const a = Buffer.from(k), b = Buffer.from(secret ?? "");
+    return a.length === b.length && b.length >= 32 && timingSafeEqual(a, b);
+  };
+  const CID_SUBJECT = /^[A-Za-z0-9_.:@-]{1,200}$/;
+  /** The Cumulus ID the billing hub acts for, when it presents the partner key; null otherwise. */
+  const partnerCid = (c: Context, key: string) => {
+    if (!sameSecret(key, ctx.config.cidPartnerKey)) return null;
+    const sub = c.req.header("x-cumulus-id") ?? "";
+    if (!CID_SUBJECT.test(sub)) fail(400, "bad_cumulus_id", "X-Cumulus-Id header required");
+    return sub;
+  };
+
   const requireOrg = async (c: Context<Env>, next: Next) => {
     const token = bearer(c);
     let org = await billing.orgForApiKey(db, token);
+    // The billing hub, acting for one Cumulus ID (server to server, partner key).
+    const sub = org ? null : partnerCid(c, token);
+    if (sub) org = await billing.orgForCid(ctx, { sub });
     // Product apps may send the signed-in user's Cumulus ID access token instead of an org API key.
     if (!org && ctx.cid && looksLikeJwt(token)) {
       const claims = await ctx.cid(token).catch((e) => { console.error(e); return null; });
@@ -173,6 +189,14 @@ main{max-width:28rem;padding:2rem;border:1px solid #000}h1{font-size:1.25rem;mar
   };
 
   v1.get("/me/entitlements", async (c) => c.json(await billing.entitlements(db, c.get("org"))));
+
+  // The billing hub hands over an org it created for a Cumulus ID before cid_links existed, so the
+  // person keeps one billing org everywhere. Needs the org's own API key AND the partner key.
+  v1.post("/me/cid-link", async (c) => {
+    const sub = partnerCid(c, c.req.header("x-cid-partner-key") ?? "");
+    if (!sub) fail(403, "forbidden", "Partner key required");
+    return c.json(await billing.linkOrgToCid(db, c.get("org"), sub!));
+  });
 
   v1.post("/me/org", async (c) => {
     const b = await body(c, z.object({ name: z.string().min(1).max(200).optional(), kind: z.enum(["individual", "business"]).optional() }));
