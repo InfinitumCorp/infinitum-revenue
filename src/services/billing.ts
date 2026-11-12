@@ -32,6 +32,35 @@ export async function orgForApiKey(db: Db, key: string): Promise<Org | null> {
   return row ?? null;
 }
 
+/**
+ * The billing org for a Cumulus ID user, created on first use as an individual org.
+ * The user can later switch it to a business org (`POST /v1/me/org`).
+ */
+export async function orgForCid(ctx: Ctx, claims: { sub: string; email?: string; name?: string }): Promise<Org> {
+  const find = async (db: Db) => (await db.query<Org>(
+    "select o.* from cid_links l join orgs o on o.id=l.org_id where l.subject=$1", [claims.sub]))[0];
+  const existing = await find(ctx.db);
+  if (existing) return existing;
+  return ctx.db.tx(async (db) => {
+    const again = await find(db);
+    if (again) return again;
+    const id = newId("org");
+    await db.query("insert into orgs (id, name, email, kind) values ($1,$2,$3,'individual')",
+      [id, (claims.name || claims.email || "Cumulus ID user").slice(0, 200), claims.email ?? null]);
+    await db.query("insert into cid_links (subject, org_id) values ($1,$2)", [claims.sub, id]);
+    await audit(db, id, "system", "org.created", { kind: "individual", via: "cumulus_id" });
+    return (await find(db))!;
+  });
+}
+
+/** A customer renaming their org or switching it between individual and business (never government or military). */
+export async function updateOwnOrg(db: Db, org: Org, a: { name?: string; kind?: "individual" | "business" }) {
+  if (org.kind === "government" || org.kind === "military") fail(403, "forbidden", "This organisation is managed by Infinitum");
+  await db.query("update orgs set name=coalesce($2,name), kind=coalesce($3,kind) where id=$1", [org.id, a.name ?? null, a.kind ?? null]);
+  await audit(db, org.id, "customer", "org.updated", a);
+  return getOrg(db, org.id);
+}
+
 export async function getOrg(db: Db, id: string): Promise<Org> {
   const [o] = await db.query<Org>("select * from orgs where id=$1", [id]);
   return o ?? fail(404, "org_not_found", "Organisation not found");

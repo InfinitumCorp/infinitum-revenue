@@ -47,6 +47,8 @@ Set secrets with `npx wrangler secret put <NAME>` (or in the Cloudflare dashboar
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | secret, **required** | Real payments. Production refuses to start with the fake provider (`NODE_ENV=production` is set in `wrangler.jsonc`). |
 | `ADMIN_API_KEY` | secret | At least 32 chars. Operator key for `/v1/admin/*` and for product backends reporting usage. |
 | `LICENCE_SIGNING_KEY` | secret | Ed25519 PKCS8 PEM (`openssl genpkey -algorithm ed25519`). Needed for licences to stay valid across requests. Without it each request signs with a throwaway key. |
+| `CUMULUS_ID_ISSUER` | var | Cumulus ID issuer for token sign-in. Default `https://id.cumuluscloud.app/realms/cumulus`; `off` disables it. |
+| `CUMULUS_ID_AUDIENCES` | var | Optional comma-separated client ids; when set, a token's `azp`/`aud` must match one. |
 | `CRON_SECRET` | secret | Protects the manual `GET /cron/flush-usage` route. The Worker's own cron trigger doesn't need it. |
 | `PUBLIC_URL` | var | Fallback Checkout / portal landing pages (`/billing/success`, `/billing/cancelled`, `/billing`). |
 | `RETURN_HOSTS` | var | Comma-separated product domains apps may pass as `returnUrl` on checkout, credits and portal calls; these origins also get CORS on the customer API. |
@@ -61,7 +63,9 @@ Set secrets with `npx wrangler secret put <NAME>` (or in the Cloudflare dashboar
 
 ## API
 
-Auth: `Authorization: Bearer <org API key>` (from signup) or the admin key for `/v1/admin/*`.
+Auth: `Authorization: Bearer <org API key>` (from signup), **or the signed-in user's Cumulus ID access token** (verified against `id.cumuluscloud.app` JWKS; each Cumulus ID gets its own billing org on first use), or the admin key for `/v1/admin/*`.
+
+Product apps take payments by sending the user's Cumulus ID token to `POST /v1/subscriptions/checkout` with a `planId` and a `returnUrl` on their own domain (listed in `RETURN_HOSTS`), then redirecting to the returned Stripe Checkout `url`. `GET /v1/me/entitlements` tells the app which tier the user holds, and `POST /v1/billing/portal` opens Stripe's portal for upgrades and cancellation. No Stripe key ever goes to a product app.
 
 | Method & path | What it does |
 |---|---|
@@ -70,6 +74,7 @@ Auth: `Authorization: Bearer <org API key>` (from signup) or the admin key for `
 | `GET /v1/drop` | Genesis Drop (public): dates, tiers with spots taken, tokens, total registered |
 | `POST /v1/drop/registrations` | Public. Register a Solana address (`wallet`, `picks`) → early-viewer number and tier; re-registering keeps the number. 5 new wallets per IP per day; closes at the snapshot |
 | `GET /v1/drop/wallets/:wallet` | Public. A registered wallet's number, tier and picks |
+| `POST /v1/me/org` | Rename the org or switch it between `individual` and `business` (needed for business-only plans) |
 | `GET /v1/me/entitlements` | Plan, features, allowance used per product, credit balance |
 | `POST /v1/subscriptions/checkout` | Checkout URL for a plan (`planId`, `quantity` for seats) |
 | `POST /v1/billing/portal` | Stripe customer portal (upgrade, cancel, payment method) |

@@ -1,5 +1,6 @@
 import type { Db } from "./db.js";
 import type { PaymentProvider } from "./payments.js";
+import type { CidVerifier } from "./cid.js";
 
 export interface Config {
   publicUrl: string;            // where Checkout returns the customer, e.g. https://infinitumcorporation.ai
@@ -11,7 +12,8 @@ export interface Config {
   tokenPayoutsEnabled: boolean;
 }
 
-export interface Ctx { db: Db; pay: PaymentProvider; config: Config }
+/** `cid`: verifies Cumulus ID access tokens so product apps can call the customer API as the signed-in user. */
+export interface Ctx { db: Db; pay: PaymentProvider; config: Config; cid?: CidVerifier }
 
 export class AppError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }

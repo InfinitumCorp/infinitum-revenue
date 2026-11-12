@@ -265,3 +265,16 @@ create table if not exists drop_registrations (
 );
 create index if not exists drop_registrations_ip_idx on drop_registrations(ip_hash, created_at);
 `;
+
+/**
+ * Cumulus ID sign-in (12 Nov 2026): a product app may call the customer API with the user's
+ * Cumulus ID access token. Each Cumulus ID subject maps to one billing org, created on first use.
+ * Shipped as its own migration so the applied ones stay untouched.
+ */
+export const CID_SCHEMA_SQL = String.raw`
+create table if not exists cid_links (
+  subject text primary key,                     -- Cumulus ID "sub" claim
+  org_id text not null unique references orgs(id),
+  created_at timestamptz not null default now()
+);
+`;

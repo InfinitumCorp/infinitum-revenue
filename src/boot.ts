@@ -2,6 +2,7 @@ import { DB_SCHEMA, migrate, pgliteDb, postgresDb } from "./db.js";
 import { FakePayments, StripePayments } from "./payments.js";
 import type { Ctx } from "./context.js";
 import { createApp } from "./app.js";
+import { createCidVerifier, DEFAULT_CID_ISSUER } from "./cid.js";
 
 /**
  * Builds the app from environment variables. Without DATABASE_URL / STRIPE_SECRET_KEY it runs fully local.
@@ -32,6 +33,11 @@ export async function bootFromEnv(opts: { worker?: boolean } = {}) {
       licenceSigningKeyPem: process.env.LICENCE_SIGNING_KEY?.replace(/\\n/g, "\n"),
       tokenPayoutsEnabled: process.env.TOKEN_PAYOUTS_ENABLED === "true",
     },
+    // Cumulus ID sign-in for product apps. CUMULUS_ID_ISSUER=off disables it.
+    cid: process.env.CUMULUS_ID_ISSUER === "off" ? undefined : createCidVerifier({
+      issuer: process.env.CUMULUS_ID_ISSUER || DEFAULT_CID_ISSUER,
+      audiences: (process.env.CUMULUS_ID_AUDIENCES ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+    }),
   };
   return { ctx, app: createApp(ctx) };
 }
