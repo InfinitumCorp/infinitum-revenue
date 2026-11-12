@@ -12,6 +12,7 @@ import { handlePaymentEvent } from "./services/webhooks.js";
 import { revenueReport } from "./services/reports.js";
 import { conjureRoutesFromEnv, type ConjureRouteHandler } from "./conjure/conjure.mjs";
 import * as drop from "./services/drop.js";
+import { looksLikeJwt } from "./cid.js";
 
 type Env = { Variables: { org: billing.Org } };
 
@@ -37,8 +38,14 @@ export function createApp(ctx: Ctx, opts: { conjure?: ConjureRouteHandler } = {}
   const bearer = (c: Context) => c.req.header("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
 
   const requireOrg = async (c: Context<Env>, next: Next) => {
-    const org = await billing.orgForApiKey(db, bearer(c));
-    if (!org) fail(401, "unauthorized", "Valid API key required");
+    const token = bearer(c);
+    let org = await billing.orgForApiKey(db, token);
+    // Product apps may send the signed-in user's Cumulus ID access token instead of an org API key.
+    if (!org && ctx.cid && looksLikeJwt(token)) {
+      const claims = await ctx.cid(token).catch((e) => { console.error(e); return null; });
+      if (claims) org = await billing.orgForCid(ctx, claims);
+    }
+    if (!org) fail(401, "unauthorized", "Valid API key or Cumulus ID token required");
     c.set("org", org!);
     await next();
   };
@@ -166,6 +173,12 @@ main{max-width:28rem;padding:2rem;border:1px solid #000}h1{font-size:1.25rem;mar
   };
 
   v1.get("/me/entitlements", async (c) => c.json(await billing.entitlements(db, c.get("org"))));
+
+  v1.post("/me/org", async (c) => {
+    const b = await body(c, z.object({ name: z.string().min(1).max(200).optional(), kind: z.enum(["individual", "business"]).optional() }));
+    const o = await billing.updateOwnOrg(db, c.get("org"), b);
+    return c.json({ id: o.id, name: o.name, kind: o.kind });
+  });
 
   v1.post("/subscriptions/checkout", async (c) => {
     const b = await body(c, z.object({ planId: z.string(), quantity: z.number().int().min(1).max(10000).default(1),

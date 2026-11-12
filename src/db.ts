@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { DROP_SCHEMA_SQL, SCHEMA_SQL } from "./schema.js";
+import { CID_SCHEMA_SQL, DROP_SCHEMA_SQL, SCHEMA_SQL } from "./schema.js";
 
 /** Minimal database surface shared by Postgres (production) and PGlite (tests / local dev). */
 export interface Db {
@@ -21,6 +21,7 @@ export const DB_SCHEMA = "infinitum_revenue";
 export async function migrate(db: Db) {
   await db.exec(SCHEMA_SQL);
   await db.exec(DROP_SCHEMA_SQL);
+  await db.exec(CID_SCHEMA_SQL);
 }
 
 /**

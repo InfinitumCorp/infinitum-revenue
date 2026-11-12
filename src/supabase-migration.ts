@@ -1,8 +1,9 @@
 import { DB_SCHEMA } from "./db.js";
-import { DROP_SCHEMA_SQL, SCHEMA_SQL } from "./schema.js";
+import { CID_SCHEMA_SQL, DROP_SCHEMA_SQL, SCHEMA_SQL } from "./schema.js";
 
 export const SUPABASE_MIGRATION_FILE = "supabase/migrations/20261107202600_infinitum_revenue.sql";
 export const DROP_MIGRATION_FILE = "supabase/migrations/20261108200000_genesis_drop.sql";
+export const CID_MIGRATION_FILE = "supabase/migrations/20261112120000_cumulus_id_links.sql";
 
 /**
  * Every Supabase migration for this product, in apply order. Each is generated
@@ -13,6 +14,7 @@ export function supabaseMigrations(): { file: string; sql: string }[] {
   return [
     { file: SUPABASE_MIGRATION_FILE, sql: supabaseMigrationSql() },
     { file: DROP_MIGRATION_FILE, sql: wrap(DROP_SCHEMA_SQL, "Genesis Drop early-viewer registrations (Solana).") },
+    { file: CID_MIGRATION_FILE, sql: wrap(CID_SCHEMA_SQL, "Cumulus ID subject to billing org links.") },
   ];
 }
 
