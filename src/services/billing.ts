@@ -2,6 +2,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { newId, type Db } from "../db.js";
 import { type Ctx, fail, audit } from "../context.js";
+import { noteReturnHost } from "../geo/hook.js";
 import { PLANS, CREDIT_PACKS, canHold, freePlanFor, getMeter, getPlan, type OrgKind, type Plan, type ProductId, PRODUCTS } from "../catalog.js";
 
 export interface Org {
@@ -111,6 +112,7 @@ export function checkReturnUrl(ctx: Ctx, raw: string | undefined): URL | null {
   if (u.username || u.password || !isAllowedOrigin(ctx, u.origin))
     fail(400, "return_url_not_allowed", "returnUrl must be an https URL on an Infinitum product domain");
   u.hash = "";
+  if (ctx.config.geoEnabled === true) noteReturnHost(ctx, u.hostname);
   return u;
 }
 

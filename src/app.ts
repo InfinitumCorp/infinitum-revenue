@@ -12,6 +12,7 @@ import { handlePaymentEvent } from "./services/webhooks.js";
 import { revenueReport } from "./services/reports.js";
 import { conjureRoutesFromEnv, type ConjureRouteHandler } from "./conjure/conjure.mjs";
 import * as drop from "./services/drop.js";
+import { geoMiddleware } from "./geo/hook.js";
 
 type Env = { Variables: { org: billing.Org } };
 
@@ -63,6 +64,9 @@ export function createApp(ctx: Ctx, opts: { conjure?: ConjureRouteHandler } = {}
     if (p.startsWith("/v1/admin") || p.startsWith("/v1/webhooks")) return next();
     return productCors(c, next);
   });
+
+  // Opt-in only. When geo routing is off this middleware is not registered.
+  if (ctx.config.geoEnabled === true) app.use("/v1/*", geoMiddleware(ctx.geo));
 
   // ------------------------------------------------------------ public
   app.get("/health", (c) => c.json({ ok: true }));
