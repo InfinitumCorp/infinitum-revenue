@@ -166,15 +166,17 @@ Target layout:
 | SCALVS.ai | ru.scalvs.app | **scalvs-russia** (new) | a | to create |
 | Infinitum Corporation site | ru.infinitumcorporation.ai | **corporation-russia** (new) | d | to create |
 | VEIL</>™ site | ru.infinitumveilvpn.app | **veil-russia** (russia-web, renamed) | e | rename after the other two leave |
+| Cumulus://ID sign-in | ru.id.cumuluscloud.app | **cumulus-id-russia** (new) | needs quota | to create (today on Google Cloud Run, europe-north1) |
 
 - russia-web is not deleted: once SCALVS and the corporation site have moved off it, it serves only the VEIL site and is renamed `veil-russia`. Zone e is full (product-3, russia-web, labyrinth-russia), so this avoids a new VM there and avoids downtime.
 - Quota after the split: zone a 6/6 vCPU and 50/50 GB (product-1 10 + conjure 20 + scalvs 20), zone d 6/6 and 50/50 (product-2 10 + fabric 20 + corporation 20), zone e unchanged. Any further product server needs a quota increase first.
-- Static IPs: 9 wanted (fabric, conjure, labyrinth, scalvs, corporation, veil site, 3 VPN nodes). The pending request is for 8: raise it to 10.
+- Static IPs: 10 wanted (fabric, conjure, labyrinth, scalvs, corporation, veil site, cumulus-id, 3 VPN nodes). The pending request is for 8: raise it to 10.
+- cumulus-id-russia has no zone with room: request +2 vCPU and +20 GB SSD in ru-central1-a (or e) on the Quotas page, then create it there. It is a small relay, so it can use `--cores 2 --core-fraction 20 --memory 2GB` if cost matters.
 - Cost: +2 servers at ~3,212 ₽/month each (2 vCPU 1,785.60 + 4 GB 950.40 + 20 GB SSD ~286 + IP 189.73), ~6,425 ₽/month more, plus snapshot storage.
 
 Cut-over (each step needs William's OK: it creates paid VMs and changes DNS):
 
-1. `bash infra/russia/create-product-server.sh scalvs-russia ru-central1-a scalvs` and `... corporation-russia ru-central1-d corporation`.
+1. `bash infra/russia/create-product-server.sh scalvs-russia ru-central1-a scalvs` and `... corporation-russia ru-central1-d corporation`; after the quota increase, `... cumulus-id-russia <zone> cumulus-id` and run `infra/russia/cumulus-id-server.sh` on it.
 2. On each: `DOMAIN=ru.scalvs.app SITE=scalvs-ru bash static-site-server.sh` (or `scripts/setup-server.sh` in scalvs-ru) and `DOMAIN=ru.infinitumcorporation.ai SITE=infinitum-corporation-site bash static-site-server.sh`. Copy the files across (`rsync` from russia-web's `/var/www/<site>`).
 3. Register a GitHub runner `scalvs-russia` (labels `yandex-ru,scalvs-russia`, user `runner`) for InfinitumCorp/scalvs-ru, then merge the scalvs-ru change that moves the deploy job onto it.
 4. Move the Cloudflare DNS-only A records (`ru.scalvs.app`, `ru.infinitumcorporation.ai`) to the new IPs (TTL 300), re-run the setup scripts so they issue certs, then run the checks.
@@ -190,7 +192,8 @@ Cut-over (each step needs William's OK: it creates paid VMs and changes DNS):
 
 Open items:
 
-- **Sign-in still crosses to Cloudflare.** Cumulus ID (id.cumuluscloud.app) is a Cloudflare Worker. A sign-in from Russia is served from Russia only once there is a Cumulus ID mirror on its own Russia server (`cumulus-id-russia`) and the products' `CID_ISSUER` points at it there. Each `ru.` origin also has to be on the Cumulus ID client allow-list (as Conjure's was in infinitum-nexus#130) or sign-in is rejected.
+- **Sign-in from Russia.** `ru.id.cumuluscloud.app` is the Cumulus ID mirror (InfinitumCorp/infinitum-nexus `apps/spectre/mirror`, a stateless relay the Worker already trusts through `SPECTRE_EXTRA_ORIGINS`). Today it runs on Google Cloud Run in Finland. `infra/russia/cumulus-id-server.sh` runs the same relay (pinned commit, checksum-verified) on its own server `cumulus-id-russia` behind nginx + Let's Encrypt; then move the `ru.id` DNS record (DNS only) from Cloud Run to that server's IP and re-run the script for HTTPS. No Cumulus ID change is needed. Accounts and data stay where they are (the Worker); the visitor's connection ends in Russia.
+- The Russia site copies sign in through `ru.id.cumuluscloud.app` (scalvs-ru rewrites `data-issuer` on deploy). The `ru.` origins are on the Cumulus ID client allow-list: ru.scalvs.app already; ru.infinitumcorporation.ai and ru.infinitumveilvpn.app on infinitum-nexus branch `cid-russia-origins` (needs a cumulus-id Worker deploy after merge).
 - **ru.scalvs.app runs in demo mode** (the API is not mirrored). So scalvs.app is commented out of `ROUTES` (decided 2026-11-12) until the API runs on scalvs-russia; Russian visitors keep using scalvs.app through Cloudflare until then.
 - Visitors on a VPN or proxy are routed by their exit IP, not where they are.
 
