@@ -107,6 +107,8 @@ Public access (since 2026-11-11):
 - Checked from outside: `/healthz` 200, `/` 303 to `/login`, `/login` 200 with "Sign in with Cumulus ID" and "Create a Cumulus ID", `/api/status` 401 without a session, HTTP 301 to HTTPS. Preview `/` returns 400 "bad path" from Conjure itself (it only serves deliverable paths).
 - Cumulus ID: id.cumuluscloud.app loads from this server (200, ~0.3 s), so no mirror is needed from the data centre. Consumer ISPs in Russia were not tested. Sign-in was rejected ("didn't come from an Infinitum product") because the `conjure` client accepted only loopback redirects. Fixed in InfinitumCorp/infinitum-nexus#130 (adds this origin), merged 2026-11-11 with #131 (main's typecheck fix). id.cumuluscloud.app (Worker `cumulus-id`) deployed from main `6bc07f8` on 2026-11-11, version `be96d455` (previous `61335397`, for rollback). Checked after deploy: Conjure Russia's `/auth/cid/start` → authorize 302 (accepted), a lookalike origin 400, scalvs and fabric still 302, OIDC discovery and `/api/auth/providers` 200.
 
+- **Conjure's home server (2026-11-12).** conjure-russia is Conjure's only server. conjure-ru pins Conjure main `c4f89bb`. The old AWS EC2 stack (Conjure `deploy/aws`, us-east-2) is retired: destroy it with `node deploy/aws/deploy.mjs --destroy --yes` from the Conjure repo (needs AWS sign-in). That leaves no Infinitum workload on AWS in any repo.
+
 ## Russia codebases (since 2026-11-11)
 
 Each Russia deployment has its own public repo holding what differs for Russia (setup, TLS, backups, checks). The app code stays in the main repo, pinned by version or commit. No secrets in either: they are generated on the servers.
