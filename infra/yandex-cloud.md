@@ -153,6 +153,49 @@ Not copied to Russia: defense products (AETHER, ARGUS, ODIN, E(O)N, infinitumdef
 **Quotas**
 - Static public IPs: limit 2, both used (fabric-russia, conjure-russia). Increase to 8 requested 2026-11-11 so russia-web, labyrinth-russia and the three nodes keep their IPs.
 
+## One Russia server per product (decided 2026-11-12)
+
+Decision (William, 2026-11-12): every Infinitum product except the military ones gets its own server in Russia. Each product's Russian clients' data lives on that product's server, and Russian clients sign in to it. Only Russian clients' data goes there; nothing for other clients moves to Russia.
+
+How Russian clients reach their server: by the residency on their Cumulus ID account, not by IP (IP is wrong behind a VPN). That needs a Russia instance of Cumulus ID holding Russian accounts, and each app's sign-in to route those accounts to its `-russia` server. This is a code change in InfinitumCorp/infinitum-nexus (the `cumulus-id` Worker) and in each app, still to do.
+
+| Product | Server | Status |
+|---|---|---|
+| FabriC++ | `fabric-russia` | live |
+| Conjure | `conjure-russia` | live |
+| Labyrinth | `labyrinth-russia` | created, nothing installed |
+| VEIL</> VPN (servers) | `infinitum-product-1/2/3` | live (in the apps after veil-vpn#21) |
+| Cumulus://ID | `cumulus-id-russia` | to create (first: every sign-in depends on it) |
+| SCALVS.ai (app and ru.scalvs.app) | `scalvs-russia` | to create (8 GB if the OpenClaw model runs there) |
+| Cumulus://Mail | `cumulus-mail-russia` | to create |
+| Cumulus Vault | `cumulus-vault-russia` | to create |
+| Cumulus Data Exchange | `cumulus-exchange-russia` | to create (no Firmament/CDAT ledger until that check clears) |
+| [HRVST] | `hrvst-russia` | to create |
+| /CNDCTR/ (Architect) | `cndctr-russia` | to create |
+| ei·det·ic | `eidetic-russia` | to create (sanctions check advised before taking clients) |
+| Zerkalo | `zerkalo-russia` | to create (sanctions/export check advised before taking clients) |
+| VEIL</> VPN (site and API) | `veil-russia` | to create (moves ru.infinitumveilvpn.app off russia-web) |
+| Infinitum Corporation site | `infinitum-site-russia` | to create (moves ru.infinitumcorporation.ai off russia-web) |
+| Infinitum Academy | `academy-russia` | to create |
+| PRPGND | `prpgnd-russia` | to create |
+| VYRAL London | `vyral-russia` | to create |
+| Aleph PR | `aleph-russia` | to create |
+| Capital Chronicles | `capital-chronicles-russia` | to create |
+
+`russia-web` is retired once its three sites have moved to their own servers.
+
+Not in Russia:
+- Military: AETHER, >_ARGUS, ODIN° (and ODIN DAEMON, Command Core), E(O)N, Infinitum Defense site, Flower/POLLEN fleet operations.
+- Internal tools, not products sold to clients: 1MIND, THRONE//OS, personal sites.
+- Firmament / $FIRM: still held for the sanctions and securities check.
+- VEIL browser (veil-phase1): Tor-first, and Russia blocks Tor; its start page carries a Tor guarantee.
+
+Each new server: standard-v3, 2 vCPU 100%, 4 GB, 20 GB network-ssd, Ubuntu 24.04, `infinitum-product-sg`, labels `product=<name>,region=russia`, a static IP, its disk added to `daily-data-servers` snapshots, and its own public `<product>-ru` repo (setup, TLS, backups, `check.sh`, no secrets) like fabric-ru and conjure-ru.
+
+Quota needed (16 new servers, 32 vCPU): per zone a/d/e 24 vCPU, 96 GB RAM, 200 GB network-ssd; static IPs 25; instances per cloud 30. At the default quota only 2 more fit (2 vCPU free in zones a and d; e is full).
+
+Cost: about 3,200 ₽ per server per month with a 20 GB disk and a static IP, so about 51,000 ₽ a month for the 16 new ones, on top of the current servers.
+
 ## Using the servers for builds
 
 Today every InfinitumCorp repo is public, so GitHub-hosted runners are free, and the Grok Bot box already has an `infinitum-ci` runner registered per repo as the fallback. Using these paid servers for general CI would cost money for work GitHub does for free. Their value is what only a machine inside Russia can do:
