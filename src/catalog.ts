@@ -73,7 +73,7 @@ export interface MarketplaceTerms {
 export const PRODUCTS = [
   "scalvs", "cndctr", "spectre", "metatron", "fabric", "cumulus", "eidetic", "hrvst",
   "veil", "throne", "eon", "orbis", "pollen", "flower", "slug", "daemon",
-  "firmament", "firm_wallet", "services", "odin", "academy",
+  "firmament", "firm_wallet", "services", "odin", "academy", "conjure", "zerkalo",
 ] as const;
 export type ProductId = (typeof PRODUCTS)[number];
 
@@ -109,6 +109,8 @@ export const METERS: Meter[] = [
   { id: "eidetic_verified_search", product: "eidetic", unit: "authorised search", unitPriceCents: 50 },
   { id: "firmament_attestation", product: "firmament", unit: "attestation", unitPriceCents: 0.1 },
   { id: "fabric_business_minutes", product: "fabric", unit: "PSTN/bridge minute", unitPriceCents: 1 },
+  { id: "conjure_build", product: "conjure", unit: "verified build", unitPriceCents: 50 },
+  { id: "zerkalo_simulation", product: "zerkalo", unit: "simulation run", unitPriceCents: 100 },
 ];
 
 export const PLANS: Plan[] = [
@@ -171,6 +173,19 @@ export const PLANS: Plan[] = [
   { id: "pollen_fleet", product: "pollen", name: "POLLEN Swarm Operations", channel: "sales_assisted", priceCents: 49900, interval: "month", features: ["mission_planner", "fleet_ledger"], allowedKinds: ORGS_ONLY },
   { id: "slug_raas", product: "slug", name: "SLUG Robotics-as-a-Service", channel: "sales_assisted", priceCents: 180000, interval: "month", perSeat: true, features: ["unit_lease", "maintenance", "battery_swap"], allowedKinds: ORGS_ONLY },
   { id: "throne_book_lease", product: "throne", name: "#THRONE Book 24-month lease", channel: "self_serve", priceCents: 9900, interval: "month", allowedKinds: ALL_CIVIL },
+
+  // Conjure — intent to a working, verified deliverable (PROPOSED tiers, 12 Nov 2026)
+  { id: "conjure_free", product: "conjure", name: "Conjure Free", channel: "self_serve", priceCents: 0, interval: "month", included: { conjure_build: 5 }, allowedKinds: ALL_CIVIL },
+  { id: "conjure_pro", product: "conjure", name: "Conjure Pro", channel: "self_serve", priceCents: 2000, interval: "month", included: { conjure_build: 100 }, overage: true, trialDays: 7, allowedKinds: ALL_CIVIL },
+  { id: "conjure_team", product: "conjure", name: "Conjure Team", channel: "self_serve", priceCents: 4000, interval: "month", perSeat: true, included: { conjure_build: 300 }, overage: true, features: ["shared_workspace", "sso"], allowedKinds: ORGS_ONLY },
+
+  // ZERKALO — reflexive simulation engine (PROPOSED tiers, 12 Nov 2026)
+  { id: "zerkalo_pro", product: "zerkalo", name: "ZERKALO Pro", channel: "self_serve", priceCents: 4900, interval: "month", included: { zerkalo_simulation: 50 }, overage: true, trialDays: 14, allowedKinds: ALL_CIVIL },
+  { id: "zerkalo_enterprise", product: "zerkalo", name: "ZERKALO Enterprise", channel: "sales_assisted", priceCents: 99900, interval: "month", included: { zerkalo_simulation: 2000 }, overage: true, features: ["private_models", "sso", "audit_export"], allowedKinds: ORGS_ONLY },
+
+  // VEIL VPN — free with privacy-safe ads; Premium removes ads (PROPOSED, 12 Nov 2026)
+  { id: "veil_free", product: "veil", name: "VEIL Free", channel: "self_serve", priceCents: 0, interval: "month", allowedKinds: ALL_CIVIL },
+  { id: "veil_premium", product: "veil", name: "VEIL Premium", channel: "self_serve", priceCents: 499, interval: "month", features: ["no_ads", "all_regions", "priority_speed"], allowedKinds: ALL_CIVIL },
 
   // Academy — training & certification
   { id: "academy_membership", product: "academy", name: "Infinitum Academy membership", channel: "self_serve", priceCents: 2900, interval: "month", allowedKinds: ALL_CIVIL },
