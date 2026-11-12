@@ -1,3 +1,4 @@
+import type { AwsHooks } from "./aws.js";
 import type { Db } from "./db.js";
 import type { PaymentProvider } from "./payments.js";
 
@@ -9,9 +10,22 @@ export interface Config {
   licenceSigningKeyPem?: string; // Ed25519 PKCS8 PEM; generated per process when absent (dev only)
   /** Token (crypto) payouts stay off until counsel signs off on the token programme. */
   tokenPayoutsEnabled: boolean;
+  /**
+   * Standard reCAPTCHA secret (v2/v3 siteverify, not Enterprise). When unset,
+   * public signup is not challenged.
+   */
+  recaptchaSecretKey?: string;
 }
 
-export interface Ctx { db: Db; pay: PaymentProvider; config: Config }
+export interface Ctx {
+  db: Db;
+  pay: PaymentProvider;
+  config: Config;
+  /** Set only when Always Free AWS adapters are configured. */
+  aws?: AwsHooks;
+  /** Best-effort AWS calls for this request. The Worker drains them with waitUntil. */
+  pending?: Promise<void>[];
+}
 
 export class AppError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }

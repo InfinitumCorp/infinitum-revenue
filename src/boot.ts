@@ -1,3 +1,4 @@
+import { attachAws } from "./aws.js";
 import { DB_SCHEMA, migrate, pgliteDb, postgresDb } from "./db.js";
 import { FakePayments, StripePayments } from "./payments.js";
 import type { Ctx } from "./context.js";
@@ -31,7 +32,9 @@ export async function bootFromEnv(opts: { worker?: boolean } = {}) {
       adminApiKey: adminApiKey.length >= 32 ? adminApiKey : "",
       licenceSigningKeyPem: process.env.LICENCE_SIGNING_KEY?.replace(/\\n/g, "\n"),
       tokenPayoutsEnabled: process.env.TOKEN_PAYOUTS_ENABLED === "true",
+      recaptchaSecretKey: process.env.RECAPTCHA_SECRET_KEY?.trim() || undefined,
     },
   };
+  attachAws(ctx);
   return { ctx, app: createApp(ctx) };
 }

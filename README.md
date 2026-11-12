@@ -48,10 +48,26 @@ Set secrets with `npx wrangler secret put <NAME>` (or in the Cloudflare dashboar
 | `ADMIN_API_KEY` | secret | At least 32 chars. Operator key for `/v1/admin/*` and for product backends reporting usage. |
 | `LICENCE_SIGNING_KEY` | secret | Ed25519 PKCS8 PEM (`openssl genpkey -algorithm ed25519`). Needed for licences to stay valid across requests. Without it each request signs with a throwaway key. |
 | `CRON_SECRET` | secret | Protects the manual `GET /cron/flush-usage` route. The Worker's own cron trigger doesn't need it. |
+| `RECAPTCHA_SECRET_KEY` | secret, optional | Standard reCAPTCHA v2/v3 secret (`https://www.google.com/recaptcha/api/siteverify`). Not reCAPTCHA Enterprise. When set, `POST /v1/signup` requires a token in the `X-Recaptcha-Token` header or a `recaptchaToken` JSON field. v2 passes on `success`; v3 must also score at least 0.5. Unset leaves signup unchanged. The site key stays in the product frontend. Checkout, portal and webhook routes are not challenged. |
 | `PUBLIC_URL` | var | Fallback Checkout / portal landing pages (`/billing/success`, `/billing/cancelled`, `/billing`). |
 | `RETURN_HOSTS` | var | Comma-separated product domains apps may pass as `returnUrl` on checkout, credits and portal calls; these origins also get CORS on the customer API. |
 | `STRIPE_AUTOMATIC_TAX` | var | `true` to enable Stripe Tax (default `false` in `wrangler.jsonc`). |
 | `TOKEN_PAYOUTS_ENABLED` | var | Leave `false` until the token programme has had legal review. |
+| `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | secret, optional | All three are required before either AWS adapter below turns on. `AWS_SESSION_TOKEN` is optional (temporary credentials). Unset, or set without the adapter's own variable, leaves behavior unchanged. |
+| `SNS_TOPIC_ARN` | var, optional | After a verified Stripe webhook is processed (not on a bad signature, not on a duplicate), publish a minimal id-only notice to this SNS topic. |
+| `CLOUDWATCH_NAMESPACE` | var, optional | Namespace for the three custom metrics below. Standard resolution, no dimensions. |
+
+### Optional AWS (Always Free)
+
+Off unless `AWS_REGION` plus access keys are set, and the adapter's own variable is set. Signing uses [aws4fetch](https://github.com/mhart/aws4fetch) (SigV4, Cloudflare Workers). Calls are queued after the response is decided, best-effort, with a 2 second timeout and no retries. A failure is logged by name and never changes the HTTP status. No `STRIPE_*` value is read or sent.
+
+[SNS Always Free](https://aws.amazon.com/free/serverless/) includes 1,000,000 publishes and 100,000 HTTP/S deliveries a month. This worker only calls `Publish` to the topic ARN. It does not create subscriptions, does not set `PhoneNumber`, and does not send email or SMS (SMS is not free; do not attach those protocols to the topic). The message is `kind`, `eventId`, and identifier fields such as `orgId` or `invoiceId`. Amounts, metadata, emails, and card-like numbers are omitted.
+
+[CloudWatch Always Free](https://aws.amazon.com/cloudwatch/pricing/) includes 10 custom metrics and 1 million API requests a month (`PutMetricData` counts; this worker never calls `GetMetricData`). Each unique dimension combination is another metric, so these three are sent with no dimensions, at 60-second resolution, in one batched request:
+
+- `WebhookProcessed`
+- `WebhookFailed`
+- `CheckoutCreated` (subscription, credit, order, licence, and mission Checkout sessions)
 
 ## Go live
 

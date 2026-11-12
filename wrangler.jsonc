@@ -2,7 +2,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   // Infinitum revenue API on Cloudflare Workers (Hono). Secrets — DATABASE_URL,
   // STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, ADMIN_API_KEY, LICENCE_SIGNING_KEY,
-  // CRON_SECRET — are set with `wrangler secret put`, never here. See README.
+  // CRON_SECRET, optional RECAPTCHA_SECRET_KEY, and optional AWS_ACCESS_KEY_ID /
+  // AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN — are set with `wrangler secret put`, never here.
+  // AWS_REGION, SNS_TOPIC_ARN, and CLOUDWATCH_NAMESPACE are optional too; leave them unset to keep AWS off. See README.
   "name": "infinitum-revenue",
   "main": "src/worker.ts",
   "compatibility_date": "2026-11-01",

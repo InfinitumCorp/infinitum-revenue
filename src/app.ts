@@ -3,6 +3,8 @@ import { cors } from "hono/cors";
 import { timingSafeEqual } from "node:crypto";
 import { z, ZodError } from "zod";
 import { AppError, fail, type Ctx } from "./context.js";
+import { paymentNotice } from "./aws.js";
+import { clientIp, recaptchaToken, verifyRecaptcha } from "./recaptcha.js";
 import { CREDIT_PACKS, HARDWARE, MARKETPLACES, METERS, PRODUCTS } from "./catalog.js";
 import * as billing from "./services/billing.js";
 import * as commerce from "./services/commerce.js";
@@ -56,7 +58,7 @@ export function createApp(ctx: Ctx, opts: { conjure?: ConjureRouteHandler } = {}
   // Only allow-listed https origins get CORS; admin and webhook routes never do.
   const productCors = cors({
     origin: (origin) => (billing.isAllowedOrigin(ctx, origin) ? origin : null),
-    allowHeaders: ["authorization", "content-type"], allowMethods: ["GET", "POST", "OPTIONS"], maxAge: 600,
+    allowHeaders: ["authorization", "content-type", "x-recaptcha-token"], allowMethods: ["GET", "POST", "OPTIONS"], maxAge: 600,
   });
   app.use("/v1/*", async (c, next) => {
     const p = c.req.path;
@@ -81,9 +83,18 @@ main{max-width:28rem;padding:2rem;border:1px solid #000}h1{font-size:1.25rem;mar
     plans: billing.publicPlans(), meters: METERS, hardware: HARDWARE, marketplaces: MARKETPLACES, creditPacks: CREDIT_PACKS,
   }));
 
+  // Public account creation. Checkout itself stays behind the org API key.
+  // Challenged only when RECAPTCHA_SECRET_KEY is set (standard siteverify, not Enterprise).
   app.post("/v1/signup", async (c) => {
-    const b = await body(c, z.object({ name: z.string().min(1).max(200), email: z.email().optional(), kind: kind.default("business"),
-      referralCode: z.string().max(32).optional() }));
+    const raw = await c.req.json().catch(() => ({}));
+    const b = z.object({ name: z.string().min(1).max(200), email: z.email().optional(), kind: kind.default("business"),
+      referralCode: z.string().max(32).optional() }).parse(raw);
+    const verdict = await verifyRecaptcha({
+      secret: ctx.config.recaptchaSecretKey,
+      token: recaptchaToken(c.req.header("x-recaptcha-token"), raw),
+      remoteIp: clientIp(c.req.header("cf-connecting-ip"), c.req.header("x-forwarded-for")),
+    });
+    if (!verdict.ok) fail(verdict.status, verdict.code, verdict.message);
     return c.json(await billing.createOrg(ctx, b), 201);
   });
 
@@ -91,7 +102,14 @@ main{max-width:28rem;padding:2rem;border:1px solid #000}h1{font-size:1.25rem;mar
     let event;
     try { event = await ctx.pay.parseWebhook(await c.req.text(), c.req.header("stripe-signature")); }
     catch { return c.json({ error: { code: "bad_signature", message: "Webhook signature verification failed" } }, 400); }
-    return c.json({ received: true, ...(await handlePaymentEvent(ctx, event)) });
+    try {
+      const result = await handlePaymentEvent(ctx, event);
+      ctx.aws?.paymentProcessed(paymentNotice(event, result));
+      return c.json({ received: true, ...result });
+    } catch (err) {
+      ctx.aws?.webhookFailed();
+      throw err;
+    }
   });
 
   app.get("/v1/licences/public-key", (c) => c.text(contracts.licencePublicKeyPem(ctx)));

@@ -1,5 +1,6 @@
 // Cloudflare Workers entry. Each request (and each cron run) boots the app with
 // its own short-lived Postgres connection, then closes it after the response.
+import { drainAws } from "./aws.js";
 import { bootFromEnv } from "./boot.js";
 import { flushUnreportedUsage } from "./services/billing.js";
 
@@ -14,6 +15,7 @@ export default {
       return await app.fetch(request);
     } finally {
       ctx.waitUntil(appCtx.db.close?.() ?? Promise.resolve());
+      if (appCtx.pending?.length) ctx.waitUntil(drainAws(appCtx));
     }
   },
 
@@ -25,6 +27,7 @@ export default {
       console.log("[cron] flush-usage", JSON.stringify(result));
     } finally {
       ctx.waitUntil(appCtx.db.close?.() ?? Promise.resolve());
+      if (appCtx.pending?.length) ctx.waitUntil(drainAws(appCtx));
     }
   },
 };
