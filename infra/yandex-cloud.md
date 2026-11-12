@@ -165,11 +165,11 @@ How Russian clients reach their server: by the residency on their Cumulus ID acc
 | Conjure | `conjure-russia` | live |
 | Labyrinth | `labyrinth-russia` | created, nothing installed |
 | VEIL</> VPN (servers) | `infinitum-product-1/2/3` | live (in the apps after veil-vpn#21) |
-| Cumulus://ID | `cumulus-id-russia` | to create (first: every sign-in depends on it) |
-| SCALVS.ai (app and ru.scalvs.app) | `scalvs-russia` | to create (8 GB if the OpenClaw model runs there) |
-| Cumulus://Mail | `cumulus-mail-russia` | to create |
-| Cumulus Vault | `cumulus-vault-russia` | to create |
-| Cumulus Data Exchange | `cumulus-exchange-russia` | to create (no Firmament/CDAT ledger until that check clears) |
+| Cumulus://ID | `cumulus-id-russia` | created 2026-11-12, zone a, IP 46.21.246.216 (dynamic), nothing installed |
+| SCALVS.ai (app and ru.scalvs.app) | `scalvs-russia` | created 2026-11-12, zone d, internal 10.130.0.9, no public IP yet (8 GB if the OpenClaw model runs there) |
+| Cumulus://Mail | `cumulus-mail-russia` | created 2026-11-12, zone d, internal 10.130.0.32, no public IP yet |
+| Cumulus Vault | `cumulus-vault-russia` | created 2026-11-12, zone a, internal 10.128.0.17, no public IP yet |
+| Cumulus Data Exchange | `cumulus-exchange-russia` | created 2026-11-12, zone e, internal 10.131.0.23, no public IP yet (no Firmament/CDAT ledger until that check clears) |
 | [HRVST] | `hrvst-russia` | to create |
 | /CNDCTR/ (Architect) | `cndctr-russia` | to create |
 | ei·det·ic | `eidetic-russia` | to create (sanctions check advised before taking clients) |
@@ -192,7 +192,11 @@ Not in Russia:
 
 Each new server: standard-v3, 2 vCPU 100%, 4 GB, 20 GB network-ssd, Ubuntu 24.04, `infinitum-product-sg`, labels `product=<name>,region=russia`, a static IP, its disk added to `daily-data-servers` snapshots, and its own public `<product>-ru` repo (setup, TLS, backups, `check.sh`, no secrets) like fabric-ru and conjure-ru.
 
-Quota needed (16 new servers, 32 vCPU): per zone a/d/e 24 vCPU, 96 GB RAM, 200 GB network-ssd; static IPs 25; instances per cloud 30. At the default quota only 2 more fit (2 vCPU free in zones a and d; e is full).
+Quota request `atdoucumc9trjkpo5irg` (2026-11-12, filed from Cloud Shell with `yc quota-manager`): approved at once for 24 vCPU and 200 GB SSD per zone a/d/e, 30 instances, 200 snapshots. Still pending review: 96 GB RAM per zone, 30 public IPs (`vpc.externalAddresses.count`, was 8, now 8/8 used) and 25 static IPs (still 2; the 2026-11-11 request for 8 was not granted). RAM at 16 GB per zone is what stops more servers today; public IPs are what stops the 4 new internal-only servers from being reachable.
+
+All five servers made on 2026-11-12: standard-v3 2 vCPU 100%, 4 GB, 20 GB network-ssd, Ubuntu 24.04, `infinitum-product-sg`, user `yc-user` with the `yandex_infinitum` key, boot disks added to `daily-data-servers`. SSH entries are in `~/.ssh/config` on William's PC (the internal-only ones jump through `russia-web`).
+
+SSH from William's PC stopped working on 2026-11-12: the PC's IP is back to 89.105.195.154, and `infinitum-product-sg` allows SSH only from 89.105.195.157 (rule `enp6g6csg5i3jvah2u45`). Add .154 beside it (or switch it) in the console to restore access.
 
 Cost: about 3,200 ₽ per server per month with a 20 GB disk and a static IP, so about 51,000 ₽ a month for the 16 new ones, on top of the current servers.
 
