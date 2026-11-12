@@ -182,7 +182,7 @@ Cut-over (each step needs William's OK: it creates paid VMs and changes DNS):
 
 ## Connections from Russia go to the Russia servers
 
-- Each product's main hostname has a Cloudflare Single Redirect rule: `ip.src.country eq "RU"` → 302 to the product's `ru.` name, same path and query. `infra/russia/geo-route.sh` writes them (dry run by default; `APPLY=1` asks for a token with Zone → Dynamic Redirect → Edit and keeps any other redirect rules). Today: scalvs.app, infinitumcorporation.ai, infinitumveilvpn.app.
+- Each product's main hostname has a Cloudflare Single Redirect rule: `ip.src.country eq "RU"` → 302 to the product's `ru.` name, same path and query. `infra/russia/geo-route.sh` writes them (dry run by default; `APPLY=1` asks for a token with Zone → Dynamic Redirect → Edit and keeps any other redirect rules). Today: infinitumcorporation.ai and infinitumveilvpn.app. scalvs.app is held (see open items).
 - The `ru.` names are DNS-only, so after that first request everything (pages, assets, the sign-in return) comes straight from the Yandex server, not through Cloudflare.
 - `/api/` and `/.well-known/` are not redirected: a redirect would break POSTs and webhooks.
 - Already Russia-side, no rule needed: conjure.infinitumcorporation.ai forwards to conjure-russia, and lbrnth.cumuluscloud.app is Russia-only. Fabric is excluded: its Russia homeserver is a separate closed server with its own accounts.
@@ -191,7 +191,7 @@ Cut-over (each step needs William's OK: it creates paid VMs and changes DNS):
 Open items:
 
 - **Sign-in still crosses to Cloudflare.** Cumulus ID (id.cumuluscloud.app) is a Cloudflare Worker. A sign-in from Russia is served from Russia only once there is a Cumulus ID mirror on its own Russia server (`cumulus-id-russia`) and the products' `CID_ISSUER` points at it there. Each `ru.` origin also has to be on the Cumulus ID client allow-list (as Conjure's was in infinitum-nexus#130) or sign-in is rejected.
-- **ru.scalvs.app runs in demo mode** (the API is not mirrored). Redirecting Russian SCALVS customers sends them to the demo until the API runs on scalvs-russia. Leave scalvs.app out of `ROUTES` until then, or accept the demo on purpose.
+- **ru.scalvs.app runs in demo mode** (the API is not mirrored). So scalvs.app is commented out of `ROUTES` (decided 2026-11-12) until the API runs on scalvs-russia; Russian visitors keep using scalvs.app through Cloudflare until then.
 - Visitors on a VPN or proxy are routed by their exit IP, not where they are.
 
 ## Using the servers for builds

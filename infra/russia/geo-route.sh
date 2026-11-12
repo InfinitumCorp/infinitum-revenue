@@ -12,7 +12,9 @@ API=https://api.cloudflare.com/client/v4
 
 # zone | main hosts (space-separated) | Russia host | paths that must not redirect (POST/API/webhooks)
 ROUTES=(
-  "scalvs.app|scalvs.app www.scalvs.app|ru.scalvs.app|/api/"
+  # scalvs.app: held until the SCALVS API runs on scalvs-russia. ru.scalvs.app is a static mirror in
+  # demo mode today, so redirecting would send paying customers to the demo. Uncomment then:
+  # "scalvs.app|scalvs.app www.scalvs.app|ru.scalvs.app|/api/"
   "infinitumcorporation.ai|infinitumcorporation.ai www.infinitumcorporation.ai|ru.infinitumcorporation.ai|/api/"
   "infinitumveilvpn.app|infinitumveilvpn.app www.infinitumveilvpn.app|ru.infinitumveilvpn.app|/api/"
 )
