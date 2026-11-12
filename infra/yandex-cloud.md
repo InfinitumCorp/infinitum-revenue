@@ -165,7 +165,7 @@ How Russian clients reach their server: by the residency on their Cumulus ID acc
 | Conjure | `conjure-russia` | live |
 | Labyrinth | `labyrinth-russia` | created, nothing installed |
 | VEIL</> VPN (servers) | `infinitum-product-1/2/3` | live (in the apps after veil-vpn#21) |
-| Cumulus://ID | `cumulus-id-russia` | running 2026-11-12 ([InfinitumCorp/cumulus-id-ru](https://github.com/InfinitumCorp/cumulus-id-ru)): separate issuer `https://ru-id.cumuluscloud.app/realms/cumulus`, zone a, IP 46.21.246.216 (dynamic). HTTPS waits for the `ru-id` DNS record |
+| Cumulus://ID | `cumulus-id-russia` | running 2026-11-12 ([InfinitumCorp/cumulus-id-ru](https://github.com/InfinitumCorp/cumulus-id-ru)): separate issuer `https://ru-id.cumuluscloud.app/realms/cumulus`, zone a, IP 46.21.246.216 (dynamic). live over HTTPS; DNS `A ru-id` (DNS only, Cloudflare) added 2026-11-12, cert to 2027-02-10. Make the IP static before launch |
 | SCALVS.ai (app and ru.scalvs.app) | `scalvs-russia` | created 2026-11-12, zone d, internal 10.130.0.9, no public IP yet (8 GB if the OpenClaw model runs there) |
 | Cumulus://Mail | `cumulus-mail-russia` | created 2026-11-12, zone d, internal 10.130.0.32, no public IP yet |
 | Cumulus Vault | `cumulus-vault-russia` | created 2026-11-12, zone a, internal 10.128.0.17, no public IP yet |
