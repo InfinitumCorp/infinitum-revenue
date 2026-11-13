@@ -53,6 +53,26 @@ export async function orgForCid(ctx: Ctx, claims: { sub: string; email?: string;
   });
 }
 
+/**
+ * Link an existing org to a Cumulus ID subject (adopting an org the billing hub created earlier).
+ * Idempotent; refuses when the subject or the org is already linked elsewhere.
+ */
+export async function linkOrgToCid(db: Db, org: Org, subject: string) {
+  if (org.kind === "government" || org.kind === "military") fail(403, "forbidden", "This organisation is managed by Infinitum");
+  return db.tx(async (tx) => {
+    const [bySubject] = await tx.query<{ org_id: string }>("select org_id from cid_links where subject=$1", [subject]);
+    if (bySubject) {
+      if (bySubject.org_id === org.id) return { linked: true, orgId: org.id };
+      return fail(409, "cid_already_linked", "This Cumulus ID already has a billing organisation");
+    }
+    const [byOrg] = await tx.query<{ subject: string }>("select subject from cid_links where org_id=$1", [org.id]);
+    if (byOrg) return fail(409, "org_already_linked", "This organisation belongs to another Cumulus ID");
+    await tx.query("insert into cid_links (subject, org_id) values ($1,$2)", [subject, org.id]);
+    await audit(tx, org.id, "system", "org.cid_linked", { via: "billing_hub" });
+    return { linked: true, orgId: org.id };
+  });
+}
+
 /** A customer renaming their org or switching it between individual and business (never government or military). */
 export async function updateOwnOrg(db: Db, org: Org, a: { name?: string; kind?: "individual" | "business" }) {
   if (org.kind === "government" || org.kind === "military") fail(403, "forbidden", "This organisation is managed by Infinitum");

@@ -7,6 +7,12 @@ export interface Config {
   /** Hosts (and their subdomains) that product apps may ask Checkout / the portal to return to. https only. */
   returnHosts?: string[];
   adminApiKey: string;          // platform operator key for admin routes
+  /**
+   * Server-to-server key for the Cumulus billing hub (mail.cumuluscloud.app): with it and an
+   * `X-Cumulus-Id` header the hub acts for that Cumulus ID, through the same cid_links mapping
+   * product apps use with a Cumulus ID token. Empty or unset: off.
+   */
+  cidPartnerKey?: string;
   licenceSigningKeyPem?: string; // Ed25519 PKCS8 PEM; generated per process when absent (dev only)
   /** Token (crypto) payouts stay off until counsel signs off on the token programme. */
   tokenPayoutsEnabled: boolean;
