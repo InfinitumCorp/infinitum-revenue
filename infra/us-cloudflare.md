@@ -67,3 +67,20 @@ Zones covered now (Russia copy live on `russia-web`): scalvs.app, infinitumcorpo
 - **Conjure:** stays on its own Russian server (`conjure-russia`) by decision on 2026-11-12. The old AWS EC2 stack (us-east-2) still has to be destroyed once AWS access is back.
 - **Cumulus Mail's `ru.` mirror** is on AWS (`MAIL_EXTRA_ORIGINS` in infinitum-nexus `apps/cumulus-mail/cloudflare.config.ts`). Move it to `russia-web` on Yandex when AWS access is back, then retire it.
 - **VEIL VPN nodes** cannot run on Cloudflare (WireGuard, IKEv2 and OpenVPN need inbound UDP). The US nodes `vpn-use2` and `vpn-usw1` stay on their VMs.
+
+## 2026-11-13 (night build)
+
+- **Cloudflare API blocked by a bad network secret.** The environment secret "Cloudflare API token for Workers deploy" (host `api.cloudflare.com`) is injected by the session proxy and Cloudflare rejects it: `6111 Invalid format for Authorization header`. Until it is deleted or re-saved as a bare token (no `Bearer`, no spaces) in the cloud environment's Network secrets, no deploy or API change works from cloud sessions on this environment.
+- **Labyrinth move tool** (infinitum-nexus `72ffd89`): `packages/lbrnth/src/move.ts` + `apps/lbrnth-host/src/move-cli.ts`. Copies orgs from the Russia server's Postgres to the US host's Supabase schema, re-encrypted under the US master key; source only read; existing target orgs never overwritten; dry run unless `--apply`. Run it ON `labyrinth-russia` (its master key never leaves it), with the US master key and a target URL for an operator role piped into root-only files:
+
+  ```bash
+  sudo TARGET_MASTER_KEY_FILE=/root/us-master-key TARGET_DATABASE_URL_FILE=/root/us-db-url \
+    node --experimental-strip-types apps/lbrnth-host/src/move-cli.ts --all          # dry run
+  # then the same with --apply; then switch LBRNTH_ENDPOINT on the relays to
+  # RU=https://lbrnth.cumuluscloud.app/api/labyrinth,*=https://lbrnth-us.cumuluscloud.app/api/labyrinth
+  ```
+
+  The US master key is not in any repo; it is the `LBRNTH_MASTER_KEY` secret on Worker `lbrnth-host-us` and was generated in the 2026-11-12 cloud session, whose sandbox is gone. If no copy was kept, rotate it (new key on the Worker before any org is moved; nothing is stored under it yet).
+- **Placement kept in configs:** `veil-vpn` `deploy/api/cloudflare.config.ts` (`ab3dc4a`, live Worker `veil-vpn-api` already pinned) and `node` `wrangler.jsonc` (`0c53997`; whether Worker `node` is live and pinned was not checked, the API being blocked). Static-only sites (`cumulus-site`, `fabric-site`, `veil-vpn-site`, `infinitum-defense-site`, `infinitum-corporation-site`, `aether-mil-web`) need no placement.
+- **Russia redirects unchanged:** the three zones with a real Russia copy of the site are covered. `ru.infinitumfabric.app` is Fabric's Matrix server, not a copy of the landing page; `ru.mail.cumuluscloud.app` is now served through Cloudflare, so redirecting there gains nothing.
+
